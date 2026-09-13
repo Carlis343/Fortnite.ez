@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda de Fortnite - Filtros Avanzados</title>
+    <!-- Actualizado para incluir Barlow Condensed y mantener Luckiest Guy e Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f17;
+            --header-bg: rgba(19, 26, 38, 0);
+            --section-bg: #1a2332;
+            --card-bg: #0f172a;
+            --card-hover: #1e293b;
+            --accent: #facc15;
+            --text: #94a3b8;
+            --text-white: #f8fafc;
+            --vbucks: #38bdf8;
+            --new-color: #10b981;
+            --leaving-color: #ef4444;
+            --pill-bg: rgba(15, 23, 42, 0.6);
+            --pill-hover: rgba(30, 41, 59, 0.8);
+            --pill-active: #38bdf8;
+            --pill-active-text: #000;
+        }
+
+        * { box-sizing: border-box; }
+
+        /* --- Barra de scroll personalizada e integrada --- */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+            border: 1px solid #2d3748;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--vbucks);
+        }
+
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: #1e293b var(--bg-color);
+        }
+        /* ------------------------------------------------- */
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            padding: 22px 24px 18px;
+            box-shadow: none;
+        }
+
+        .topbar-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 10px;
+        }
+
+        h1 {
+            /* Fuente Barlow Condensed aplicada al título principal */
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 2.2rem;
+            color: var(--text-white);
+            margin: 0;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .topbar-date {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--vbucks);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .topbar-quickrow {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            background-color: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(51, 65, 85, 0.6);
+            padding: 8px 14px;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.85rem;
+            width: 170px;
+            transition: all 0.2s;
+        }
+        .search-box:focus { outline: none; border-color: var(--vbucks); }
+
+        .quick-btn {
+            background-color: var(--pill-bg);
+            border: 1px solid rgba(55, 65, 81, 0.6);
+            color: var(--text-white);
+            padding: 7px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .quick-btn:hover { background-color: var(--pill-hover); }
+        .quick-btn.active.new { background-color: var(--new-color); border-color: var(--new-color); color: #000; }
+        .quick-btn.active.leaving { background-color: var(--leaving-color); border-color: var(--leaving-color); color: #fff; }
+
+        .topbar-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        .dropdown-wrapper {
+            position: relative;
+        }
+
+        .dropdown-toggle {
+            background-color: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(51, 65, 85, 0.6);
+            color: var(--text-white);
+            padding: 9px 18px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dropdown-toggle:hover { border-color: var(--vbucks); background-color: rgba(30, 41, 59, 0.8); }
+
+        .filter-panel {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #111827;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 16px;
+            width: 320px;
+            max-height: 450px;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            z-index: 1100;
+            text-align: left;
+        }
+        .filter-panel.open { display: block; }
+
+        .panel-header {
+            font-size: 0.75rem;
+            font-weight: 900;
+            color: var(--text);
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            margin-top: 12px;
+            text-transform: uppercase;
+        }
+        .panel-header:first-child { margin-top: 0; }
+
+        .pill-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .filter-pill {
+            background-color: var(--pill-bg);
+            color: #94a3b8;
+            border: 1px solid rgba(55, 65, 81, 0.6);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-style: italic;
+            transition: all 0.15s ease;
+        }
+        .filter-pill:hover {
+            background-color: var(--pill-hover);
+            color: #fff;
+        }
+        .filter-pill.active {
+            background-color: var(--pill-active);
+            color: var(--pill-active-text);
+            border-color: var(--pill-active);
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 8px 2px;
+            cursor: pointer;
+        }
+        .toggle-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-white);
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background-color: var(--pill-bg);
+            border: 1px solid #374151;
+            border-radius: 999px;
+            transition: background-color 0.2s;
+        }
+        .toggle-slider::before {
+            content: "";
+            position: absolute;
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            top: 2px;
+            background-color: #94a3b8;
+            border-radius: 50%;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: var(--vbucks);
+            border-color: var(--vbucks);
+        }
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(18px);
+            background-color: #000;
+        }
+
+        .timer-badge {
+            background: rgba(250, 204, 21, 0.05);
+            border: 1px solid rgba(250, 204, 21, 0.4);
+            color: var(--accent);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        main {
+            max-width: 1600px;
+            margin: 20px auto;
+            padding: 0 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .shop-section { background-color: transparent; }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background-color: rgba(19, 26, 38, 0.5);
+            border: 1px solid rgba(45, 55, 72, 0.4);
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+        .section-header:hover { background-color: rgba(26, 35, 50, 0.7); }
+
+        .section-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title {
+            font-weight: 900;
+            font-size: 1.1rem;
+            color: var(--text-white);
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .section-count { font-weight: 700; color: #64748b; font-size: 0.85rem; }
+
+        .collapse-icon {
+            font-size: 0.9rem;
+            color: var(--text);
+            transition: transform 0.2s;
+            display: inline-block;
+        }
+
+        .shop-section.collapsed .section-grid { display: none; }
+        .shop-section.collapsed .collapse-icon { transform: rotate(-90deg); }
+
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        .item-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #1e293b;
+            transition: transform 0.15s, border-color 0.15s;
+            position: relative;
+        }
+        .item-card:hover { transform: translateY(-3px); border-color: #475569; }
+
+        .item-image-wrapper {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #0f172a !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 10px;
+        }
+
+        .item-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+        }
+
+        .badge-container {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 2;
+        }
+
+        .badge {
+            font-size: 0.65rem;
+            font-weight: 900;
+            padding: 4px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .badge.new { background-color: var(--new-color); }
+        .badge.leaving { background-color: var(--leaving-color); }
+
+        .plus-badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            z-index: 3;
+            background-color: var(--accent);
+            color: #000;
+            font-weight: 900;
+            font-size: 0.7rem;
+            padding: 3px 7px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+            transition: transform 0.15s;
+        }
+        .plus-badge:hover { transform: scale(1.08); background-color: #fde047; }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-overlay.open { display: flex; }
+
+        .modal-box {
+            background-color: #111827;
+            border: 1px solid #374151;
+            border-radius: 14px;
+            width: 100%;
+            max-width: 420px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+        }
+
+        .modal-header {
+            padding: 16px;
+            text-align: center;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 1.3rem;
+            color: var(--text-white);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        .modal-list {
+            overflow-y: auto;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .modal-item-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            background-color: #1a2332;
+        }
+
+        .modal-item-icon-wrap {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            border-radius: 6px;
+            background: #0f172a !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .modal-item-icon-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+        .modal-item-info { flex-grow: 1; min-width: 0; }
+        .modal-item-name {
+            color: var(--text-white);
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-decoration: underline;
+            text-decoration-color: #475569;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .modal-item-type { color: var(--text); font-size: 0.7rem; font-weight: 600; }
+
+        .modal-item-price {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 0;
+            font-weight: 800;
+            font-size: 0.78rem;
+            color: var(--text-white);
+            padding: 5px 9px;
+            border-radius: 8px;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+        }
+        .modal-item-price.clickable {
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s ease, background-color 0.15s ease, border-color 0.15s ease;
+        }
+        .modal-item-price.clickable:hover {
+            background: rgba(56, 189, 248, 0.2);
+            transform: scale(1.05);
+        }
+        .modal-item-price.clickable:active { transform: scale(0.95); }
+        .modal-item-price .applied-check {
+            display: none;
+            color: var(--new-color);
+            font-weight: 900;
+            margin-left: 1px;
+        }
+        .modal-item-price.applied {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--new-color);
+        }
+        .modal-item-price.applied .price-current {
+            text-decoration: line-through;
+            color: #94a3b8;
+        }
+        .modal-item-price.applied .applied-check { display: inline; }
+
+        .modal-price-summary {
+            padding: 12px 16px;
+            text-align: center;
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: var(--text-white);
+            border-top: 1px solid #2d3748;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .modal-price-summary .summary-original {
+            display: none;
+            text-decoration: line-through;
+            color: #64748b;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .modal-price-summary.discounted .summary-original { display: inline; }
+        .modal-price-summary.discounted #items-modal-current-price { color: var(--new-color); }
+        .modal-price-summary .summary-hint {
+            display: block;
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-top: 2px;
+            width: 100%;
+        }
+
+        .modal-footer { padding: 14px 16px; }
+        .modal-close-btn {
+            width: 100%;
+            background-color: #fff;
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 900;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: opacity 0.15s;
+        }
+        .modal-close-btn:hover { opacity: 0.85; }
+
+        .item-details {
+            padding: 8px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background-color: var(--section-bg);
+            flex-grow: 1;
+        }
+
+        .item-title {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: var(--text-white);
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.15;
+        }
+
+        .item-type { font-size: 0.7rem; color: #94a3b8; font-weight: 600; }
+        .item-season { font-size: 0.65rem; color: var(--vbucks); font-style: italic; margin-top: -2px; }
+
+        .item-price {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: white;
+            margin-top: auto;
+            padding-top: 6px;
+        }
+        .item-price .price-original {
+            display: none;
+            text-decoration: line-through;
+            color: #64748b;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+        .item-price.discounted .price-original { display: inline; }
+        .item-price.discounted .price-value { color: var(--new-color); }
+
+        .vbucks-icon {
+            width: 14px;
+            height: 14px;
+            background-color: var(--vbucks);
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .loading, .error {
+            text-align: center; font-size: 1.2rem; color: white; padding: 60px; font-weight: 700;
+        }
+
+        
+        /* Footer natural al final de la página */
+        footer {
+            background-color: var(#131a26);
+            border-top: 1px solid #2d3748;
+            padding: 16px 22px;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+        }
+
+        footer p {
+            margin: 3px 0;
+        }
+
+        footer a {
+            color: var(--vbucks);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        footer .creator {
+            color: var(--text-white);
+        }
+
+        footer .copyright {
+            font-size: 0.72rem;
+            opacity: 0.65;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="topbar-inner">
+            <h1>Tienda de Fortnite</h1>
+            <div class="topbar-date" id="topbar-date"></div>
+            <div class="timer-badge" id="timer-box">Calculando...</div>
+
+            <div class="topbar-quickrow">
+                <input type="text" id="search-input" class="search-box" placeholder="Buscar...">
+                <button class="quick-btn new" id="quick-new">✨ Nuevo hoy</button>
+                <button class="quick-btn leaving" id="quick-leaving">⏱️ Se va hoy</button>
+            </div>
+
+            <div class="topbar-controls">
+                <div class="dropdown-wrapper">
+                    <button class="dropdown-toggle" id="settings-toggle">⚙️ Ajustes ▾</button>
+                    <div class="filter-panel" id="settings-panel" style="width: 260px;">
+                        <div class="panel-header">Mostrar / Ocultar</div>
+                        <label class="toggle-row">
+                            <span class="toggle-label">Quitar precios</span>
+                            <span class="toggle-switch">
+                                <input type="checkbox" id="toggle-hide-prices">
+                                <span class="toggle-slider"></span>
+                            </span>
+                        </label>
+                        <label class="toggle-row">
+                            <span class="toggle-label">Quitar nombres</span>
+                            <span class="toggle-switch">
+                                <input type="checkbox" id="toggle-hide-names">
+                                <span class="toggle-slider"></span>
+                            </span>
+                        </label>
+                        <label class="toggle-row">
+                            <span class="toggle-label">Quitar fecha de introducción</span>
+                            <span class="toggle-switch">
+                                <input type="checkbox" id="toggle-hide-intro-date">
+                                <span class="toggle-slider"></span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="dropdown-wrapper">
+                    <button class="dropdown-toggle" id="type-toggle">📦 Objetos ▾</button>
+                    <div class="filter-panel" id="type-panel">
+                        <div class="panel-header">Filtrar por Tipo</div>
+                        <div class="pill-grid" id="type-pills-container">
+                            <button class="filter-pill" data-type="skin">Skins</button>
+                            <button class="filter-pill" data-type="bundle">Bundles</button>
+                            <button class="filter-pill" data-type="pickaxe">Picos</button>
+                            <button class="filter-pill" data-type="backpack">Mochilas</button>
+                            <button class="filter-pill" data-type="wrap">Envoltorios</button>
+                            <button class="filter-pill" data-type="glider">Alas deltas</button>
+                            <button class="filter-pill" data-type="shoes">Zapatillas</button>
+                            <button class="filter-pill" data-type="pet">Mascotas</button>
+                            <button class="filter-pill" data-type="emote">Gestos</button>
+                            <button class="filter-pill" data-type="music">Música</button>
+                            <button class="filter-pill" data-type="instrument">Instrumentos</button>
+                            <button class="filter-pill" data-type="lego">LEGO</button>
+                            <button class="filter-pill" data-type="car">Vehículos</button>
+                            <button class="filter-pill" data-type="decal">Decals</button>
+                            <button class="filter-pill" data-type="contrail">Estelas</button>
+                            <button class="filter-pill" data-type="loading">Pantallas</button>
+                            <button class="filter-pill" data-type="other">Otros</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dropdown-wrapper">
+                    <button class="dropdown-toggle" id="season-toggle">📅 Temporadas ▾</button>
+                    <div class="filter-panel" id="season-panel" style="width: 340px;">
+                        <div id="seasons-grid-container">
+                            <div style="color: #64748b; font-size: 0.8rem;">Cargando temporadas...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+
+    <main id="main-container">
+        <div class="loading">Cargando tienda... ⌛</div>
+    </main>
+
+    <div class="modal-overlay" id="items-modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header" id="items-modal-title">Contenido</div>
+            <div class="modal-list" id="items-modal-list"></div>
+            <div class="modal-price-summary" id="items-modal-price-summary">
+                <span class="vbucks-icon"></span>
+                <span class="summary-original" id="items-modal-original-price"></span>
+                <span id="items-modal-current-price"></span>
+                <span class="summary-hint">Clica una pieza si ya la tienes: se descuenta del lote</span>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-close-btn" id="items-modal-close">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://fortnite-api.com/v2/shop';
+        let shopDataBySection = {};
+        let sectionOrder = {};
+        let modalItemsRegistry = [];
+        
+        let currentSearch = '';
+        let selectedTypes = new Set();
+        let selectedSeasons = new Set();
+        let filterNewTodayActive = false;
+        let filterLeavingTodayActive = false;
+
+        let availableSeasonsByChapter = {};
+        let standalonePricesByName = {};
+
+        let hidePrices = false;
+        let hideNames = false;
+        let hideIntroDate = false;
+
+        let currentModalEntry = null;
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown-wrapper')) {
+                document.querySelectorAll('.filter-panel').forEach(p => p.classList.remove('open'));
+            }
+        });
+
+        document.getElementById('type-toggle').addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.getElementById('type-panel').classList.toggle('open');
+            document.getElementById('season-panel').classList.remove('open');
+            document.getElementById('settings-panel').classList.remove('open');
+        });
+
+        document.getElementById('season-toggle').addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.getElementById('season-panel').classList.toggle('open');
+            document.getElementById('type-panel').classList.remove('open');
+            document.getElementById('settings-panel').classList.remove('open');
+        });
+
+        document.getElementById('settings-toggle').addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.getElementById('settings-panel').classList.toggle('open');
+            document.getElementById('type-panel').classList.remove('open');
+            document.getElementById('season-panel').classList.remove('open');
+        });
+
+        document.getElementById('toggle-hide-prices').addEventListener('change', (e) => {
+            hidePrices = e.target.checked;
+            renderShop();
+        });
+        document.getElementById('toggle-hide-names').addEventListener('change', (e) => {
+            hideNames = e.target.checked;
+            renderShop();
+        });
+        document.getElementById('toggle-hide-intro-date').addEventListener('change', (e) => {
+            hideIntroDate = e.target.checked;
+            renderShop();
+        });
+
+        function renderTopbarDate() {
+            const el = document.getElementById('topbar-date');
+            if (!el) return;
+            const text = new Date().toLocaleDateString('es-ES', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            });
+            el.textContent = text.charAt(0).toUpperCase() + text.slice(1);
+        }
+
+        function startTimer() {
+            function update() {
+                const now = new Date();
+                const nextMidnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0));
+                const diff = nextMidnight - now;
+                if (diff <= 0) { document.getElementById('timer-box').innerText = "🔄 Actualizando..."; return; }
+                const h = Math.floor((diff / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
+                const m = Math.floor((diff / 1000 / 60) % 60).toString().padStart(2, '0');
+                const s = Math.floor((diff / 1000) % 60).toString().padStart(2, '0');
+                document.getElementById('timer-box').innerText = `⏱️ ${h}:${m}:${s}`;
+            }
+            update();
+            setInterval(update, 1000);
+        }
+
+        async function fetchShop() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                if (data.status === 200 && data.data && data.data.entries) {
+                    processEntries(data.data.entries);
+                    buildSeasonPanel();
+                    renderShop();
+                } else {
+                    showError("Estructura de la tienda no válida.");
+                }
+            } catch (error) {
+                console.error(error);
+                showError("Error al conectar con los servidores.");
+            }
+        }
+
+        function showError(msg) {
+            document.getElementById('main-container').innerHTML = `<div class="error">⚠️ ${msg}</div>`;
+        }
+
+        function resolveCosmeticBackground(rarityValue, seriesBackendValue) {
+            return null;
+        }
+
+        function resolveEntryBackground(entry, refItem, includedItems) {
+            return null;
+        }
+
+        function collectIncludedItems(entry) {
+            const items = [];
+            (entry.brItems || []).forEach(i => items.push({
+                name: i.name,
+                image: i.images?.smallIcon || i.images?.icon || i.images?.featured,
+                typeLabel: i.type?.displayValue || 'Objeto',
+                categoryKey: classifyBrItem(i),
+                rarityValue: i.rarity?.value || null,
+                seriesBackendValue: i.series?.backendValue || null
+            }));
+            (entry.cars || []).forEach(i => {
+                const carKey = classifyCarItem(i);
+                items.push({
+                    name: i.name,
+                    image: i.images?.small || i.images?.large || i.images?.icon,
+                    typeLabel: carKey === 'decal' ? 'Decal' : (i.type?.displayValue || 'Vehículo'),
+                    categoryKey: carKey,
+                    rarityValue: i.rarity?.value || null,
+                    seriesBackendValue: i.series?.backendValue || null
+                });
+            });
+            (entry.instruments || []).forEach(i => items.push({
+                name: i.name,
+                image: i.images?.small || i.images?.large,
+                typeLabel: i.type?.displayValue || 'Instrumento',
+                categoryKey: 'instrument',
+                rarityValue: i.rarity?.value || null,
+                seriesBackendValue: i.series?.backendValue || null
+            }));
+            (entry.tracks || []).forEach(i => items.push({
+                name: i.title || i.name,
+                image: i.albumArt || i.images?.icon,
+                typeLabel: i.artist || 'Jam Track',
+                categoryKey: 'music',
+                rarityValue: null,
+                seriesBackendValue: null
+            }));
+            (entry.legoKits || []).forEach(i => items.push({
+                name: i.name,
+                image: i.images?.small || i.images?.large,
+                typeLabel: i.type?.displayValue || 'LEGO',
+                categoryKey: 'lego',
+                rarityValue: null,
+                seriesBackendValue: null
+            }));
+            (entry.lego || []).forEach(i => items.push({
+                name: i.name,
+                image: i.images?.small || i.images?.large,
+                typeLabel: 'LEGO',
+                categoryKey: 'lego',
+                rarityValue: null,
+                seriesBackendValue: null
+            }));
+            return items;
+        }
+
+        function classifyBrItem(item) {
+            const backendType = (item.backendType || '').toLowerCase();
+            const typeVal = (item.type?.value || '').toLowerCase();
+            const typeDisplay = (item.type?.displayValue || '').toLowerCase();
+            const typeBackendVal = (item.type?.backendValue || '').toLowerCase();
+            const combined = `${backendType} ${typeVal} ${typeDisplay} ${typeBackendVal}`;
+            const matches = (str) => combined.includes(str);
+
+            if (matches('character') || typeVal === 'outfit') return "skin";
+            if (matches('sidekick') || matches('pet') || matches('mascota') || matches('companion')) return "pet";
+            if (matches('kicks') || matches('shoes') || matches('zapatilla')) return "shoes";
+            if (matches('pickaxe') || matches('pico')) return "pickaxe";
+            if (matches('backpack') || matches('mochila')) return "backpack";
+            if (matches('itemwrap') || matches('wrap') || matches('envoltorio')) return "wrap";
+            if (matches('glider') || matches('ala delta')) return "glider";
+            if (matches('dance') || matches('emoji') || matches('spray') || matches('emote') || matches('gesto')) return "emote";
+            if (matches('contrail') || matches('estela')) return "contrail";
+            if (matches('loadingscreen') || matches('loading') || matches('pantalla')) return "loading";
+            if (matches('music') || matches('música')) return "music";
+            return "other";
+        }
+
+        function classifyCarItem(item) {
+            const v = (item.type?.value || '').toLowerCase();
+            const bv = (item.type?.backendValue || '').toLowerCase();
+            if (v === 'skin' || v.includes('decal') || bv.includes('skin')) return "decal";
+            return "car";
+        }
+
+        function classifyAllCategories(entry) {
+            const keys = new Set();
+            if (entry.bundle) keys.add('bundle');
+            (entry.brItems || []).forEach(i => keys.add(classifyBrItem(i)));
+            (entry.cars || []).forEach(i => keys.add(classifyCarItem(i)));
+            if (entry.instruments && entry.instruments.length > 0) keys.add('instrument');
+            if (entry.tracks && entry.tracks.length > 0) keys.add('music');
+            if ((entry.legoKits && entry.legoKits.length > 0) || (entry.lego && entry.lego.length > 0)) keys.add('lego');
+            if (keys.size === 0) keys.add('other');
+            return Array.from(keys);
+        }
+
+        function pickMainCarItem(cars) {
+            const priority = (item) => {
+                const t = `${item.type?.value || ''} ${item.type?.displayValue || ''}`.toLowerCase();
+                if (t.includes('wheel') || t.includes('rueda')) return 4;
+                if (t.includes('trail') || t.includes('estela')) return 3;
+                if (t.includes('boost') || t.includes('impulso')) return 3;
+                if (t.includes('decal') || t.includes('calcoman')) return 2;
+                return 1;
+            };
+            return [...cars].sort((a, b) => priority(a) - priority(b))[0];
+        }
+
+        const CHAPTER_MINI_SEASONS = {
+            '6': { '3': 1, '6': 2 }
+        };
+
+        function resolveSeasonDisplay(chapter, rawSeason) {
+            const minis = CHAPTER_MINI_SEASONS[chapter];
+            if (!minis) return null;
+            if (Object.prototype.hasOwnProperty.call(minis, rawSeason)) {
+                const msIndex = minis[rawSeason];
+                return { text: buildSeasonText(chapter, `MS${msIndex}`), isMini: true, miniIndex: msIndex };
+            }
+            const rawNum = parseInt(rawSeason, 10);
+            if (isNaN(rawNum)) return null;
+            const previousMinis = Object.keys(minis).map(Number).filter(n => n < rawNum).length;
+            const adjustedSeason = rawNum - previousMinis;
+            return { text: buildSeasonText(chapter, String(adjustedSeason)), isMini: false };
+        }
+
+        function buildSeasonText(chapter, season) {
+            const msMatch = /^MS(\d+)$/i.exec(season);
+            if (msMatch) return `Capítulo ${chapter}, MS${msMatch[1]}`;
+            return `Capítulo ${chapter}, Temp. ${season}`;
+        }
+
+        const SEASON_START_DATES = [
+            { date: '2017-10-26', chapter: '1', season: '1' },
+            { date: '2017-12-14', chapter: '1', season: '2' },
+            { date: '2018-02-22', chapter: '1', season: '3' },
+            { date: '2018-05-01', chapter: '1', season: '4' },
+            { date: '2018-07-12', chapter: '1', season: '5' },
+            { date: '2018-09-27', chapter: '1', season: '6' },
+            { date: '2018-12-06', chapter: '1', season: '7' },
+            { date: '2019-02-28', chapter: '1', season: '8' },
+            { date: '2019-05-09', chapter: '1', season: '9' },
+            { date: '2019-08-01', chapter: '1', season: 'X' },
+            { date: '2019-10-15', chapter: '2', season: '1' },
+            { date: '2020-02-20', chapter: '2', season: '2' },
+            { date: '2020-06-17', chapter: '2', season: '3' },
+            { date: '2020-08-27', chapter: '2', season: '4' },
+            { date: '2020-12-02', chapter: '2', season: '5' },
+            { date: '2021-03-16', chapter: '2', season: '6' },
+            { date: '2021-06-08', chapter: '2', season: '7' },
+            { date: '2021-09-13', chapter: '2', season: '8' },
+            { date: '2021-12-05', chapter: '3', season: '1' },
+            { date: '2022-03-20', chapter: '3', season: '2' },
+            { date: '2022-06-05', chapter: '3', season: '3' },
+            { date: '2022-09-18', chapter: '3', season: '4' },
+            { date: '2022-12-04', chapter: '4', season: '1' },
+            { date: '2023-03-10', chapter: '4', season: '2' },
+            { date: '2023-06-09', chapter: '4', season: '3' },
+            { date: '2023-08-25', chapter: '4', season: '4' },
+            { date: '2023-11-03', chapter: '4', season: 'OG' },
+            { date: '2023-12-03', chapter: '5', season: '1' },
+            { date: '2024-03-08', chapter: '5', season: '2' },
+            { date: '2024-05-24', chapter: '5', season: '3' },
+            { date: '2024-08-16', chapter: '5', season: '4' },
+            { date: '2024-11-02', chapter: '5', season: 'Remix' },
+            { date: '2024-12-01', chapter: '6', season: '1' },
+            { date: '2025-02-21', chapter: '6', season: '2' },
+            { date: '2025-05-02', chapter: '6', season: 'MS1' },
+            { date: '2025-06-07', chapter: '6', season: '3' },
+            { date: '2025-08-07', chapter: '6', season: '4' },
+            { date: '2025-11-01', chapter: '6', season: 'MS2' },
+            { date: '2025-11-29', chapter: '7', season: '1' },
+            { date: '2026-03-19', chapter: '7', season: '2' },
+            { date: '2026-06-06', chapter: '7', season: '3' },
+            { date: '2026-08-20', chapter: '7', season: '4' }
+        ].map((s, idx) => ({ ...s, sortKey: idx }));
+
+        function estimateSeasonFromDate(addedDateStr) {
+            if (!addedDateStr) return null;
+            const added = new Date(addedDateStr);
+            if (isNaN(added.getTime())) return null;
+            let best = null;
+            for (const entry of SEASON_START_DATES) {
+                if (new Date(entry.date + 'T00:00:00Z') <= added) {
+                    best = entry;
+                } else {
+                    break;
+                }
+            }
+            return best;
+        }
+
+        function processEntries(entries) {
+            shopDataBySection = {};
+            sectionOrder = {};
+            availableSeasonsByChapter = {};
+            standalonePricesByName = {};
+            const now = new Date();
+            const nextMidnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0));
+
+            entries.forEach(entry => {
+                let itemName = "Desconocido", itemImage = "", itemType = "Objeto";
+                let categoryKey = "other";
+                let seasonText = "Desconocida";
+                let isEstimatedSeason = false;
+                
+                let refItem = entry.brItems?.[0] || entry.instruments?.[0] || entry.cars?.[0] || entry.tracks?.[0] || entry.legoKits?.[0] || entry.lego?.[0];
+
+                let leavesToday = false;
+                if (entry.outDate) {
+                    const outDateObj = new Date(entry.outDate);
+                    if (outDateObj <= nextMidnight) leavesToday = true;
+                }
+
+                let isNew = false;
+                if (refItem) {
+                    if (refItem.shopHistory && refItem.shopHistory.length > 0) {
+                        const firstAppearanceDate = new Date(refItem.shopHistory[0]);
+                        const diffHours = (now - firstAppearanceDate) / (1000 * 60 * 60);
+                        if (diffHours >= 0 && diffHours <= 48) isNew = true;
+                    } else if (refItem.added && entry.inDate) {
+                        const addedDate = new Date(refItem.added);
+                        const inDate = new Date(entry.inDate);
+                        const diffDaysAdded = (now - addedDate) / (1000 * 60 * 60 * 24);
+                        const diffHoursShop = (now - inDate) / (1000 * 60 * 60);
+                        if (diffDaysAdded <= 30 && diffHoursShop <= 48) isNew = true;
+                    }
+                }
+
+                let seasonSortKey = 999999;
+
+                if (refItem && refItem.introduction) {
+                    let chNum = String(refItem.introduction.chapter || "1");
+                    let rawSeason = String(refItem.introduction.season || "?");
+
+                    if (/^remix$/i.test(rawSeason)) {
+                        chNum = "5";
+                    }
+
+                    const resolved = resolveSeasonDisplay(chNum, rawSeason);
+                    seasonText = resolved ? resolved.text : `Capítulo ${chNum}, Temp. ${rawSeason}`;
+                    seasonSortKey = refItem.introduction.backendValue ?? seasonSortKey;
+
+                    let chapterKey = `CHAPTER ${chNum}`;
+                    if (!availableSeasonsByChapter[chapterKey]) {
+                        availableSeasonsByChapter[chapterKey] = new Map();
+                    }
+                    if (!availableSeasonsByChapter[chapterKey].has(seasonText)) {
+                        availableSeasonsByChapter[chapterKey].set(seasonText, seasonSortKey);
+                    }
+                } else if (refItem && refItem.added) {
+                    const estimated = estimateSeasonFromDate(refItem.added);
+                    if (estimated) {
+                        seasonText = buildSeasonText(estimated.chapter, estimated.season);
+                        seasonSortKey = estimated.sortKey;
+                        isEstimatedSeason = true;
+
+                        let chapterKey = `CHAPTER ${estimated.chapter}`;
+                        if (!availableSeasonsByChapter[chapterKey]) {
+                            availableSeasonsByChapter[chapterKey] = new Map();
+                        }
+                        if (!availableSeasonsByChapter[chapterKey].has(seasonText)) {
+                            availableSeasonsByChapter[chapterKey].set(seasonText, seasonSortKey);
+                        }
+                    }
+                }
+
+                if (entry.bundle) {
+                    itemName = entry.bundle.name; 
+                    itemImage = entry.bundle.image;
+                    itemType = entry.bundle.info || "Lote"; 
+                    categoryKey = "bundle";
+                } 
+                else if (entry.tracks && entry.tracks.length > 0) {
+                    const mus = entry.tracks[0];
+                    itemName = mus.title || mus.name; 
+                    itemType = mus.artist || "Jam Track";
+                    itemImage = mus.albumArt || mus.images?.icon; 
+                    categoryKey = "music";
+                }
+                else if (entry.instruments && entry.instruments.length > 0) {
+                    const inst = entry.instruments[0];
+                    itemName = inst.name; 
+                    itemType = inst.type?.displayValue || "Instrumento";
+                    itemImage = inst.images?.icon || inst.images?.large; 
+                    categoryKey = "instrument";
+                }
+                else if ((entry.kicks && entry.kicks.length > 0) || (entry.shoes && entry.shoes.length > 0)) {
+                    const kickItem = (entry.kicks && entry.kicks[0]) || (entry.shoes && entry.shoes[0]);
+                    itemName = kickItem.name; 
+                    itemType = kickItem.type?.displayValue || "Zapatillas";
+                    itemImage = kickItem.images?.icon || kickItem.images?.large || kickItem.images?.smallIcon || kickItem.images?.featured;
+                    categoryKey = "shoes";
+                }
+                else if (entry.pets && entry.pets.length > 0) {
+                    const petItem = entry.pets[0];
+                    itemName = petItem.name; 
+                    itemType = petItem.type?.displayValue || "Mascota";
+                    itemImage = petItem.images?.icon || petItem.images?.large || petItem.images?.smallIcon;
+                    categoryKey = "pet";
+                }
+                else if (entry.cars && entry.cars.length > 0) {
+                    const car = pickMainCarItem(entry.cars);
+                    const carKey = classifyCarItem(car);
+                    itemName = car.name; 
+                    itemType = carKey === 'decal' ? 'Decal' : (car.type?.displayValue || "Vehículo");
+                    itemImage = car.images?.large || car.images?.icon || car.images?.smallIcon || car.image || car.images?.featured;
+                    categoryKey = carKey;
+                }
+                else if (entry.brItems && entry.brItems.length > 0) {
+                    const item = entry.brItems[0];
+                    itemName = item.name; 
+                    itemType = item.type?.displayValue || "Cosmético";
+                    itemImage = item.images?.icon || item.images?.smallIcon || item.images?.featured;
+                    categoryKey = classifyBrItem(item);
+                }
+                else if (entry.legoKits?.length > 0 || entry.lego?.length > 0) {
+                    const legoItem = (entry.legoKits && entry.legoKits[0]) || entry.lego[0];
+                    itemName = legoItem.name; 
+                    itemType = legoItem.type?.displayValue || "Construcción";
+                    itemImage = legoItem.images?.icon || legoItem.images?.large || legoItem.images?.small || legoItem.images?.wide; 
+                    categoryKey = "lego";
+                }
+
+                if (!itemImage && entry.newDisplayAsset?.materialInstances?.[0]?.images?.OfferImage) {
+                    itemImage = entry.newDisplayAsset.materialInstances[0].images.OfferImage;
+                }
+
+                const includedItems = collectIncludedItems(entry);
+
+                const pieces = entry.bundle
+                    ? [{ name: entry.bundle.name, image: entry.bundle.image, typeLabel: entry.bundle.info || 'Lote', categoryKey: 'bundle' }, ...includedItems]
+                    : includedItems;
+
+                if (!entry.bundle && typeof entry.finalPrice === 'number' && itemName && itemName !== "Desconocido") {
+                    standalonePricesByName[itemName] = entry.finalPrice;
+                }
+
+                const categoryKeys = classifyAllCategories(entry);
+
+                let sectionName = entry.layout?.name || entry.section?.name;
+                if (!sectionName) return;
+
+                if (!shopDataBySection[sectionName]) shopDataBySection[sectionName] = [];
+
+                const layoutIndex = entry.layout?.index ?? entry.layout?.rank ?? (100000 - (entry.sortPriority ?? 0));
+                if (sectionOrder[sectionName] === undefined || layoutIndex < sectionOrder[sectionName]) {
+                    sectionOrder[sectionName] = layoutIndex;
+                }
+
+                shopDataBySection[sectionName].push({
+                    name: itemName, type: itemType, image: itemImage,
+                    price: entry.finalPrice, categoryKey: categoryKey, categoryKeys: categoryKeys,
+                    seasonText: seasonText, seasonEstimated: isEstimatedSeason, isNew: isNew, leavesToday: leavesToday,
+                    includedItems: includedItems, pieces: pieces
+                });
+            });
+        }
+
+        function buildSeasonPanel() {
+            const container = document.getElementById('seasons-grid-container');
+            container.innerHTML = '';
+
+            const sortedChapters = Object.keys(availableSeasonsByChapter).sort((a,b) => {
+                const numA = parseInt(a.replace('CHAPTER ', '')) || 0;
+                const numB = parseInt(b.replace('CHAPTER ', '')) || 0;
+                return numA - numB;
+            });
+
+            if (sortedChapters.length === 0) {
+                container.innerHTML = '<div style="color: #64748b; font-size: 0.8rem;">No se encontraron temporadas</div>';
+                return;
+            }
+
+            sortedChapters.forEach(chap => {
+                const headerEl = document.createElement('div');
+                headerEl.className = 'panel-header';
+                headerEl.textContent = chap;
+                container.appendChild(headerEl);
+
+                const gridEl = document.createElement('div');
+                gridEl.className = 'pill-grid';
+
+                const seasonsList = Array.from(availableSeasonsByChapter[chap].entries())
+                    .sort((a, b) => a[1] - b[1])
+                    .map(([text]) => text);
+
+                seasonsList.forEach(seasonStr => {
+                    const btn = document.createElement('button');
+                    btn.className = 'filter-pill';
+
+                    let shortName = seasonStr;
+                    let fullTitle = seasonStr;
+                    const msMatch = seasonStr.match(/,\s*MS(\d+)$/);
+                    const numMatch = seasonStr.match(/Season\s*(\d+)/i) || seasonStr.match(/Temp\.\s*(\d+)/i);
+                    if (msMatch) {
+                        shortName = `MS${msMatch[1]}`;
+                        fullTitle = seasonStr.replace(/MS(\d+)$/, `MS$1 (mini season $1)`);
+                    } else if (numMatch) {
+                        shortName = `S${numMatch[1]}`;
+                    } else if (/remix/i.test(seasonStr)) {
+                        shortName = 'MS1';
+                        fullTitle = seasonStr.replace(/Temp\.\s*Remix/i, 'MS1 (mini season 1)');
+                    } else if (/\bOG\b/i.test(seasonStr)) {
+                        shortName = 'OG';
+                    }
+
+                    btn.textContent = shortName;
+                    btn.title = fullTitle;
+                    btn.dataset.season = seasonStr;
+
+                    btn.addEventListener('click', () => {
+                        if (selectedSeasons.has(seasonStr)) {
+                            selectedSeasons.delete(seasonStr);
+                            btn.classList.remove('active');
+                        } else {
+                            selectedSeasons.add(seasonStr);
+                            btn.classList.add('active');
+                        }
+                        renderShop();
+                    });
+
+                    gridEl.appendChild(btn);
+                });
+
+                container.appendChild(gridEl);
+            });
+        }
+
+        function renderShop() {
+            const container = document.getElementById('main-container');
+            container.innerHTML = '';
+            let totalRendered = 0;
+            modalItemsRegistry = [];
+            let cardUidCounter = 0;
+
+            const orderedSections = Object.entries(shopDataBySection).sort((a, b) => {
+                const orderA = sectionOrder[a[0]] ?? Number.MAX_SAFE_INTEGER;
+                const orderB = sectionOrder[b[0]] ?? Number.MAX_SAFE_INTEGER;
+                return orderA - orderB;
+            });
+
+            for (const [section, items] of orderedSections) {
+                const filteredItems = items.filter(i => {
+                    const matchesCategory = (selectedTypes.size === 0) || i.categoryKeys.some(k => selectedTypes.has(k));
+                    const matchesSeason = (selectedSeasons.size === 0) || selectedSeasons.has(i.seasonText);
+                    const matchesText = i.name.toLowerCase().includes(currentSearch.toLowerCase());
+                    
+                    const matchesNew = !filterNewTodayActive || i.isNew;
+                    const matchesLeaving = !filterLeavingTodayActive || i.leavesToday;
+
+                    return matchesCategory && matchesSeason && matchesText && matchesNew && matchesLeaving;
+                });
+
+                if (filteredItems.length === 0) continue;
+                totalRendered++;
+
+                const sectionEl = document.createElement('div');
+                sectionEl.className = 'shop-section';
+
+                const sectionHeaderEl = document.createElement('div');
+                sectionHeaderEl.className = 'section-header';
+                sectionHeaderEl.innerHTML = `
+                    <div class="section-title-wrapper">
+                        <h2 class="section-title">${section}</h2>
+                        <span class="section-count">(${filteredItems.length})</span>
+                    </div>
+                    <span class="collapse-icon">▼</span>
+                `;
+
+                sectionHeaderEl.addEventListener('click', () => {
+                    sectionEl.classList.toggle('collapsed');
+                });
+
+                let cardsHTML = '';
+                filteredItems.forEach((item, idx) => {
+                    const cardUid = 'price-' + (cardUidCounter++);
+
+                    let displayItem = { name: item.name, image: item.image, type: item.type };
+                    if (selectedTypes.size > 0 && !selectedTypes.has(item.categoryKey)) {
+                        const matchPiece = (item.pieces || []).find(p => selectedTypes.has(p.categoryKey));
+                        if (matchPiece) {
+                            displayItem = {
+                                name: matchPiece.name, image: matchPiece.image, type: matchPiece.typeLabel
+                            };
+                        }
+                    }
+
+                    const imgHTML = displayItem.image 
+                        ? `<img src="${displayItem.image}" alt="${hideNames ? 'Objeto' : displayItem.name}" class="item-img" loading="lazy">` 
+                        : `<span style="color:#475569; font-weight:bold; font-size: 0.7rem;">SIN IMAGEN</span>`;
+                    
+                    const seasonTitleAttr = item.seasonEstimated ? ' title="Fecha de temporada estimada"' : '';
+                    const seasonHTML = (item.seasonText !== "Desconocida" && !hideIntroDate) ? `<span class="item-season"${seasonTitleAttr}>${item.seasonText}</span>` : '';
+
+                    const titleHTML = hideNames
+                        ? ''
+                        : `<h3 class="item-title" title="${displayItem.name}">${displayItem.name}</h3>`;
+
+                    const priceHTML = hidePrices
+                        ? ''
+                        : `<div class="item-price" id="${cardUid}">
+                               <span class="vbucks-icon"></span>
+                               <span class="price-original"></span>
+                               <span class="price-value">${item.price.toLocaleString()}</span>
+                           </div>`;
+
+                    let badgesHTML = '<div class="badge-container">';
+                    if (item.isNew) badgesHTML += '<span class="badge new">✨ NUEVO</span>';
+                    if (item.leavesToday) badgesHTML += '<span class="badge leaving">⏱️ SE VA HOY</span>';
+                    badgesHTML += '</div>';
+
+                    let plusBadgeHTML = '';
+                    if (item.includedItems && item.includedItems.length > 1) {
+                        const registryIdx = modalItemsRegistry.length;
+                        modalItemsRegistry.push({
+                            title: displayItem.name,
+                            items: item.includedItems,
+                            cardUid: cardUid,
+                            originalPrice: item.price
+                        });
+                        plusBadgeHTML = `<button class="plus-badge" data-modal-idx="${registryIdx}" title="Ver contenido">+${item.includedItems.length}</button>`;
+                    }
+
+                    cardsHTML += `
+                        <div class="item-card">
+                            <div class="item-image-wrapper">
+                                ${badgesHTML}
+                                ${plusBadgeHTML}
+                                ${imgHTML}
+                            </div>
+                            <div class="item-details">
+                                <div>
+                                    ${titleHTML}
+                                    <span class="item-type">${displayItem.type}</span><br>
+                                    ${seasonHTML}
+                                </div>
+                                ${priceHTML}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                const gridEl = document.createElement('div');
+                gridEl.className = 'section-grid';
+                gridEl.innerHTML = cardsHTML;
+
+                sectionEl.appendChild(sectionHeaderEl);
+                sectionEl.appendChild(gridEl);
+                container.appendChild(sectionEl);
+            }
+
+            if (totalRendered === 0) {
+                showError("No hay cosméticos que coincidan con los filtros seleccionados.");
+            }
+        }
+
+        document.getElementById('type-pills-container').addEventListener('click', (e) => {
+            if (e.target.classList.contains('filter-pill')) {
+                const typeKey = e.target.dataset.type;
+                if (selectedTypes.has(typeKey)) {
+                    selectedTypes.delete(typeKey);
+                    e.target.classList.remove('active');
+                } else {
+                    selectedTypes.add(typeKey);
+                    e.target.classList.add('active');
+                }
+                renderShop();
+            }
+        });
+
+        document.getElementById('quick-new').addEventListener('click', (e) => {
+            filterNewTodayActive = !filterNewTodayActive;
+            e.target.classList.toggle('active', filterNewTodayActive);
+            renderShop();
+        });
+
+        document.getElementById('quick-leaving').addEventListener('click', (e) => {
+            filterLeavingTodayActive = !filterLeavingTodayActive;
+            e.target.classList.toggle('active', filterLeavingTodayActive);
+            renderShop();
+        });
+
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            currentSearch = e.target.value;
+            renderShop();
+        });
+
+        function openItemsModal(entryData) {
+            currentModalEntry = entryData;
+            if (!currentModalEntry.appliedDiscounts) currentModalEntry.appliedDiscounts = new Set();
+
+            document.getElementById('items-modal-title').textContent = hideNames ? 'Contenido' : entryData.title;
+            const listEl = document.getElementById('items-modal-list');
+            listEl.innerHTML = entryData.items.map(it => {
+                const nameHTML = hideNames
+                    ? ''
+                    : `<div class="modal-item-name">${it.name}</div>`;
+
+                const imgHTML = it.image ? `<img src="${it.image}" alt="${hideNames ? 'Objeto' : it.name}">` : '';
+
+                let priceHTML = '';
+                const standalonePrice = standalonePricesByName[it.name];
+                if (!hidePrices && typeof standalonePrice === 'number') {
+                    const isApplied = currentModalEntry.appliedDiscounts.has(it.name);
+                    priceHTML = `
+                        <div class="modal-item-price clickable ${isApplied ? 'applied' : ''}" data-name="${it.name.replace(/"/g, '&quot;')}" data-price="${standalonePrice}" title="${isApplied ? 'Ya descontada del lote: clic para quitarla' : 'Clic si ya tienes este objeto suelto'}">
+                            <span class="vbucks-icon"></span>
+                            <span class="price-current">${standalonePrice.toLocaleString()}</span>
+                            <span class="applied-check">✓</span>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="modal-item-row">
+                        <div class="modal-item-icon-wrap">
+                            ${imgHTML}
+                        </div>
+                        <div class="modal-item-info">
+                            ${nameHTML}
+                            <div class="modal-item-type">${it.typeLabel}</div>
+                        </div>
+                        ${priceHTML}
+                    </div>
+                `;
+            }).join('');
+
+            const hasClickableItems = !hidePrices && entryData.items.some(it => typeof standalonePricesByName[it.name] === 'number');
+            document.querySelector('#items-modal-price-summary .summary-hint').style.display = hasClickableItems ? 'block' : 'none';
+
+            updateModalPriceSummary();
+            document.getElementById('items-modal-overlay').classList.add('open');
+        }
+
+        function updateModalPriceSummary() {
+            if (!currentModalEntry) return;
+
+            const original = currentModalEntry.originalPrice;
+            let discountTotal = 0;
+            currentModalEntry.appliedDiscounts.forEach(name => {
+                discountTotal += standalonePricesByName[name] || 0;
+            });
+            const current = Math.max(0, original - discountTotal);
+
+            const summaryEl = document.getElementById('items-modal-price-summary');
+            document.getElementById('items-modal-current-price').textContent = current.toLocaleString();
+            const originalEl = document.getElementById('items-modal-original-price');
+
+            if (discountTotal > 0) {
+                summaryEl.classList.add('discounted');
+                originalEl.textContent = original.toLocaleString();
+            } else {
+                summaryEl.classList.remove('discounted');
+            }
+
+            const cardPriceEl = document.getElementById(currentModalEntry.cardUid);
+            if (cardPriceEl) {
+                cardPriceEl.querySelector('.price-value').textContent = current.toLocaleString();
+                const cardOriginalEl = cardPriceEl.querySelector('.price-original');
+                if (discountTotal > 0) {
+                    cardPriceEl.classList.add('discounted');
+                    cardOriginalEl.textContent = original.toLocaleString();
+                } else {
+                    cardPriceEl.classList.remove('discounted');
+                }
+            }
+        }
+
+        document.getElementById('items-modal-list').addEventListener('click', (e) => {
+            const priceEl = e.target.closest('.modal-item-price.clickable');
+            if (!priceEl || !currentModalEntry) return;
+
+            const itemName = priceEl.dataset.name;
+
+            if (currentModalEntry.appliedDiscounts.has(itemName)) {
+                currentModalEntry.appliedDiscounts.delete(itemName);
+                priceEl.classList.remove('applied');
+                priceEl.title = 'Clic si ya tienes este objeto suelto';
+            } else {
+                currentModalEntry.appliedDiscounts.add(itemName);
+                priceEl.classList.add('applied');
+                priceEl.title = 'Ya descontada del lote: clic para quitarla';
+            }
+
+            updateModalPriceSummary();
+        });
+
+        function closeItemsModal() {
+            document.getElementById('items-modal-overlay').classList.remove('open');
+            currentModalEntry = null;
+        }
+
+        document.getElementById('items-modal-close').addEventListener('click', closeItemsModal);
+        document.getElementById('items-modal-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'items-modal-overlay') closeItemsModal();
+        });
+
+        document.getElementById('main-container').addEventListener('click', (e) => {
+            const btn = e.target.closest('.plus-badge');
+            if (!btn) return;
+            const entryData = modalItemsRegistry[parseInt(btn.dataset.modalIdx, 10)];
+            if (entryData) openItemsModal(entryData);
+        });
+
+        renderTopbarDate();
+        startTimer();
+        fetchShop();
+    </script>
+
+    <footer>
+        <p>Datos proporcionados por <a href="https://fortnite-api.com/" target="_blank" rel="noopener noreferrer">Fortnite-API.com</a> | Creado por <strong class="creator">Carlis343</strong></p>
+        <p class="copyright">© Fortnite y sus respectivos logotipos son marcas comerciales o marcas registradas de Epic Games, Inc. en EE. UU. y en otros lugares. Este sitio no está afiliado ni respaldado por Epic Games.</p>
+    </footer>
+</body>
+</html>
