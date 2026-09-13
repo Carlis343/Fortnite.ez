@@ -3,22 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página Vacía</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Calculadoras STW, XP & Conversor - Fortnite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #0b0f17;
-            --header-bg: rgba(19, 26, 38, 0);
             --section-bg: #1a2332;
-            --card-bg: #0f172a;
-            --card-hover: #1e293b;
+            --card-bg: #131d2e;
             --accent: #facc15;
+            --accent-glow: rgba(250, 204, 21, 0.15);
             --text: #94a3b8;
             --text-white: #f8fafc;
             --vbucks: #38bdf8;
+            --vbucks-glow: rgba(56, 189, 248, 0.15);
+            --xp-color: #4ade80;
+            --xp-glow: rgba(74, 222, 128, 0.15);
+            --error: #f87171;
+            --error-bg: rgba(248, 113, 113, 0.1);
         }
 
         * { box-sizing: border-box; }
+
+        /* --- Barra de scroll personalizada e integrada --- */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+            border: 1px solid #2d3748;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--vbucks);
+        }
+
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: #1e293b var(--bg-color);
+        }
 
         html, body {
             height: 100%;
@@ -36,6 +65,317 @@
 
         main {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 20px;
+            gap: 25px;
+        }
+
+        /* Tarjetas principales */
+        .stw-card {
+            background-color: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 580px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .stw-card h2 {
+            color: var(--text-white);
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        /* Botón de Interrogante */
+        .info-btn {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-white);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .info-btn:hover {
+            background-color: var(--accent);
+            color: var(--bg-color);
+            border-color: var(--accent);
+            transform: scale(1.05);
+        }
+
+        .season-info {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--vbucks);
+            margin-bottom: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background-color: rgba(56, 189, 248, 0.08);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(56, 189, 248, 0.15);
+        }
+
+        .calculator-container {
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .input-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-white);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group input {
+            width: 100%;
+            background-color: var(--bg-color);
+            border: 2px solid #2d3748;
+            border-radius: 10px;
+            padding: 10px 14px;
+            color: var(--text-white);
+            font-size: 1rem;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.25s ease;
+        }
+
+        .input-group input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .input-group input:focus {
+            border-color: var(--vbucks);
+            box-shadow: 0 0 0 4px var(--vbucks-glow);
+        }
+
+        .xp-card input:focus {
+            border-color: var(--xp-color) !important;
+            box-shadow: 0 0 0 4px var(--xp-glow) !important;
+        }
+
+        .convert-card input:focus {
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 0 4px var(--accent-glow) !important;
+        }
+
+        /* Caja de resultados */
+        .result-group {
+            flex: 1;
+            background-color: var(--section-bg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .result-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .result-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .result-value {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-white);
+        }
+
+        .result-value.highlight-vbucks {
+            color: var(--vbucks);
+        }
+
+        .result-value.highlight-xp {
+            color: var(--xp-color);
+        }
+
+        .result-value.highlight-convert {
+            color: var(--accent);
+        }
+
+        .result-group.placeholder-state {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        .result-group.error-state {
+            background-color: var(--error-bg);
+            border-color: rgba(248, 113, 113, 0.2);
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .error-message {
+            color: var(--error);
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        /* Pop-up Modal Común */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(6px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 24px;
+            padding: 35px 30px;
+            width: 100%;
+            max-width: 680px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.1);
+            position: relative;
+            transform: translateY(20px) scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-image-container {
+            flex: 0.8;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.05), rgba(250, 204, 21, 0.05));
+            border-radius: 16px;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            min-height: 220px;
+        }
+
+        .modal-image-container img {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6));
+        }
+
+        .modal-text-wrapper {
+            flex: 1.4;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            gap: 12px;
+        }
+
+        .modal-title {
+            color: #ff3b3b;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .modal-text {
+            color: var(--text-white);
+            font-size: 0.92rem;
+            line-height: 1.65;
+            margin: 0;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 18px;
+            right: 22px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .close-modal:hover {
+            background-color: var(--error-bg);
+            color: var(--error);
+            border-color: rgba(248, 113, 113, 0.3);
         }
 
         /* Footer natural al final de la página */
@@ -71,18 +411,335 @@
             font-size: 0.72rem;
             opacity: 0.65;
         }
+
+        @media (max-width: 600px) {
+            .calculator-container, .modal-content {
+                flex-direction: column;
+            }
+            .modal-image-container {
+                width: 100%;
+                min-height: 180px;
+            }
+        }
     </style>
 </head>
 <body>
 
     <main>
-        <!-- Contenido principal vacío -->
+        <!-- Calculadora Pavos STW con Botón de Info Independiente -->
+        <div class="stw-card">
+            <div class="card-header">
+                <h2>Calculadora Pavos STW</h2>
+                <button class="info-btn" onclick="toggleModal('stwModal')" title="Más información">?</button>
+            </div>
+            <div style="margin-top: 10px;">
+                <div class="calculator-container">
+                    <div class="input-column">
+                        <div class="input-group">
+                            <label for="pavosInput">Cantidad de Pavos</label>
+                            <input type="number" id="pavosInput" placeholder="Ej. 1000" oninput="calcularPavos()">
+                        </div>
+                    </div>
+                    <div class="result-group placeholder-state" id="resultPavos">
+                        <span>Introduce una cantidad</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calculadora de XP -->
+        <div class="stw-card xp-card">
+            <h2>Calculadora de XP</h2>
+            <div style="margin-top: 15px;">
+                <div class="season-info" id="seasonInfoText">Sincronizando temporada...</div>
+                <div class="calculator-container">
+                    <div class="input-column">
+                        <div class="input-group">
+                            <label for="nivelActual">Nivel Actual</label>
+                            <input type="number" id="nivelActual" placeholder="Cargando..." min="1" disabled oninput="calcularXp()">
+                        </div>
+                        <div class="input-group">
+                            <label for="nivelObjetivo">Nivel Objetivo</label>
+                            <input type="number" id="nivelObjetivo" placeholder="Cargando..." min="1" disabled oninput="calcularXp()">
+                        </div>
+                    </div>
+                    <div class="result-group placeholder-state" id="resultXp">
+                        <span>Esperando API...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conversor de Pavos con Botón de Info -->
+        <div class="stw-card convert-card">
+            <div class="card-header">
+                <h2>Conversor de Pavos</h2>
+                <button class="info-btn" onclick="toggleModal('convertModal')" title="Más información">?</button>
+            </div>
+            <div class="calculator-container">
+                <div class="input-column">
+                    <div class="input-group">
+                        <label for="eurosInput">Euros (€)</label>
+                        <input type="number" id="eurosInput" placeholder="Ej. 7.99" step="0.01" min="0" oninput="convertirDeEuros()">
+                    </div>
+                    <div class="input-group">
+                        <label for="pavosConvInput">Pavos (V-Bucks)</label>
+                        <input type="number" id="pavosConvInput" placeholder="Ej. 1000" min="0" oninput="convertirDePavos()">
+                    </div>
+                </div>
+                <div class="result-group placeholder-state" id="resultConversor">
+                    <span>Introduce un valor</span>
+                </div>
+            </div>
+        </div>
     </main>
+
+    <!-- Pop-up Modal específico para STW -->
+    <div class="modal-overlay" id="stwModal" onclick="window.ifModalClick(event, 'stwModal')">
+        <div class="modal-content">
+            <button class="close-modal" onclick="toggleModal('stwModal')">&times;</button>
+            <div class="modal-image-container">
+                <img src="https://fortnite.gg/img/items/238/icon.png?12" alt="Fundador Skin STW">
+            </div>
+            <div class="modal-text-wrapper">
+                <div class="modal-title">Información de Utilidad</div>
+                <p class="modal-text">Esta calculadora lamentablemente solo será útil para los usuarios que tengan la versión de fundadores del modo de juego Salvar, ya que el resto de jugadores no tienen la opción de conseguir pavos jugando al mismo.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pop-up Modal para el Conversor -->
+    <div class="modal-overlay" id="convertModal" onclick="window.ifModalClick(event, 'convertModal')">
+        <div class="modal-content">
+            <button class="close-modal" onclick="toggleModal('convertModal')">&times;</button>
+            <div class="modal-image-container">
+                <img src="https://fortnite.gg/img/items/4616/icon.png?13" alt="Diamond Hanz Skin">
+            </div>
+            <div class="modal-text-wrapper">
+                <div class="modal-title">Información de Utilidad</div>
+                <p class="modal-text">Este conversor realiza un cálculo directo entre pavos y euros. Por lo general, resulta mucho más rentable adquirir una tarjeta de ahorro o un lote específico en la tienda. Sin embargo, puedes utilizar esta herramienta si necesitas consultar cantidades exactas o menores.</p>
+            </div>
+        </div>
+    </div>
 
     <footer>
         <p>Datos proporcionados por <a href="https://fortnite-api.com/" target="_blank" rel="noopener noreferrer">Fortnite-API.com</a> | Creado por <strong class="creator">Carlis343</strong></p>
         <p class="copyright">© Fortnite y sus respectivos logotipos son marcas comerciales o marcas registradas de Epic Games, Inc. en EE. UU. y en otros lugares. Este sitio no está afiliado ni respaldado por Epic Games.</p>
     </footer>
+
+    <script>
+        let diasRestantesGlobal = 0;
+
+        async function cargarTemporadaFortnite() {
+            const seasonInfoEl = document.getElementById('seasonInfoText');
+            const inputActual = document.getElementById('nivelActual');
+            const inputObjetivo = document.getElementById('nivelObjetivo');
+            const resultXp = document.getElementById('resultXp');
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+            try {
+                const url = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://fortnite-api.com/v2/seasons/current');
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                
+                const json = await response.json();
+                const wrapper = JSON.parse(json.contents);
+                
+                if (wrapper.status === 200 && wrapper.data) {
+                    const temporada = wrapper.data;
+                    const nombreTemporada = temporada.displayName || `Temporada ${temporada.season}`;
+                    const capitulo = temporada.chapter ? `Capítulo ${temporada.chapter} - ` : '';
+                    
+                    const fechaFin = new Date(temporada.endDate);
+                    const hoy = new Date();
+                    
+                    const diffTime = fechaFin - hoy;
+                    diasRestantesGlobal = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    if (diasRestantesGlobal < 1) diasRestantesGlobal = 1;
+
+                    seasonInfoEl.innerHTML = `📍 ${capitulo}${nombreTemporada} (${diasRestantesGlobal} días restantes)`;
+                } else {
+                    throw new Error('Respuesta inválida');
+                }
+            } catch (error) {
+                diasRestantesGlobal = 49;
+                seasonInfoEl.innerHTML = `📍 Override (Capítulo 7 - Temporada 4) — 49 días restantes`;
+            }
+
+            inputActual.disabled = false;
+            inputObjetivo.disabled = false;
+            inputActual.placeholder = "Ej. 15";
+            inputObjetivo.placeholder = "Ej. 100";
+            resultXp.innerHTML = '<span>Introduce tus niveles</span>';
+        }
+
+        // Control genérico de Modales por ID
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.toggle('active');
+            }
+        }
+
+        // Cerrar modal al hacer clic fuera del contenido interno
+        window.ifModalClick = function(event, modalId) {
+            const modal = document.getElementById(modalId);
+            if (event.target === modal) {
+                toggleModal(modalId);
+            }
+        }
+
+        function calcularPavos() {
+            const inputVal = document.getElementById('pavosInput').value;
+            const resultContainer = document.getElementById('resultPavos');
+
+            if (inputVal === '') {
+                resultContainer.className = 'result-group placeholder-state';
+                resultContainer.innerHTML = '<span>Introduce una cantidad</span>';
+                return;
+            }
+
+            const pavos = Number(inputVal);
+
+            if (isNaN(pavos) || pavos <= 0 || pavos % 100 !== 0) {
+                resultContainer.className = 'result-group error-state';
+                resultContainer.innerHTML = '<span class="error-message">⚠️ Valor no válido</span>';
+                return;
+            }
+
+            const dias = pavos / 100;
+            const fechaActual = new Date();
+            fechaActual.setDate(fechaActual.getDate() + dias);
+            const fechaFormateada = fechaActual.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+
+            resultContainer.className = 'result-group';
+            resultContainer.innerHTML = `
+                <div class="result-item">
+                    <span class="result-label">⏱️ Días necesarios</span>
+                    <span class="result-value highlight-vbucks">${dias} ${dias === 1 ? 'día' : 'días'}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">📅 Fecha estimada</span>
+                    <span class="result-value">${fechaFormateada}</span>
+                </div>
+            `;
+        }
+
+        function calcularXp() {
+            const actualVal = document.getElementById('nivelActual').value;
+            const objetivoVal = document.getElementById('nivelObjetivo').value;
+            const resultContainer = document.getElementById('resultXp');
+
+            if (actualVal === '' || objetivoVal === '') {
+                resultContainer.className = 'result-group placeholder-state';
+                resultContainer.innerHTML = '<span>Introduce tus niveles</span>';
+                return;
+            }
+
+            const nivelActual = Number(actualVal);
+            const nivelObjetivo = Number(objetivoVal);
+
+            if (isNaN(nivelActual) || isNaN(nivelObjetivo) || nivelObjetivo <= nivelActual || nivelActual < 0) {
+                resultContainer.className = 'result-group error-state';
+                resultContainer.innerHTML = '<span class="error-message">⚠️ Rango no válido</span>';
+                return;
+            }
+
+            const nivelesRestantes = nivelObjetivo - nivelActual;
+            const xpTotalNecesaria = nivelesRestantes * 80000;
+            const nivelesPorDia = (nivelesRestantes / diasRestantesGlobal).toFixed(1);
+
+            resultContainer.className = 'result-group';
+            resultContainer.innerHTML = `
+                <div class="result-item">
+                    <span class="result-label">🎯 Niveles por día</span>
+                    <span class="result-value highlight-xp">${nivelesPorDia} niveles/día</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">⚡ XP Total necesaria</span>
+                    <span class="result-value">${xpTotalNecesaria.toLocaleString('es-ES')} XP</span>
+                </div>
+            `;
+        }
+
+        function convertirDeEuros() {
+            const eurosVal = document.getElementById('eurosInput').value;
+            const pavosInput = document.getElementById('pavosConvInput');
+            const resultContainer = document.getElementById('resultConversor');
+
+            if (eurosVal === '') {
+                pavosInput.value = '';
+                resultContainer.className = 'result-group placeholder-state';
+                resultContainer.innerHTML = '<span>Introduce un valor</span>';
+                return;
+            }
+
+            const euros = Number(eurosVal);
+
+            if (isNaN(euros) || euros < 0) {
+                resultContainer.className = 'result-group error-state';
+                resultContainer.innerHTML = '<span class="error-message">⚠️ Valor no válido</span>';
+                return;
+            }
+
+            const pavosCalculados = Math.round((euros * 50) / 0.99);
+            pavosInput.value = pavosCalculados;
+
+            resultContainer.className = 'result-group';
+            resultContainer.innerHTML = `
+                <div class="result-item">
+                    <span class="result-label">💶 Equivalente en Euros</span>
+                    <span class="result-value highlight-convert">${euros.toFixed(2)} €</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">🪙 Total en Pavos</span>
+                    <span class="result-value">${pavosCalculados.toLocaleString('es-ES')} V-Bucks</span>
+                </div>
+            `;
+        }
+
+        function convertirDePavos() {
+            const pavosVal = document.getElementById('pavosConvInput').value;
+            const eurosInput = document.getElementById('eurosInput');
+            const resultContainer = document.getElementById('resultConversor');
+
+            if (pavosVal === '') {
+                eurosInput.value = '';
+                resultContainer.className = 'result-group placeholder-state';
+                resultContainer.innerHTML = '<span>Introduce un valor</span>';
+                return;
+            }
+
+            const pavos = Number(pavosVal);
+
+            if (isNaN(pavos) || pavos < 0) {
+                resultContainer.className = 'result-group error-state';
+                resultContainer.innerHTML = '<span class="error-message">⚠️ Valor no válido</span>';
+                return;
+            }
+
+            const eurosCalculados = (pavos * 0.99) / 50;
+            eurosInput.value = eurosCalculados.toFixed(2);
+
+            resultContainer.className = 'result-group';
+            resultContainer.innerHTML = `
+                <div class="result-item">
+                    <span class="result-label">💶 Equivalente en Euros</span>
+                    <span class="result-value highlight-convert">${eurosCalculados.toFixed(2)} €</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">🪙 Total en Pavos</span>
+                    <span class="result-value">${pavos.toLocaleString('es-ES')} V-Bucks</span>
+                </div>
+            `;
+        }
+
+        window.onload = () => {
+            cargarTemporadaFortnite();
+        };
+    </script>
 
 </body>
 </html>
