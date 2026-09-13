@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- SEO Básico -->
-    <title>FORTNITE.EZ - Tienda de Fortnite y Rankings en Vivo</title>
+    <title>FORTNITE.EZ</title>
     <meta name="description" content="Consulta la tienda diaria de Fortnite, objetos, precios, cosméticos y rankings en tiempo real con FORTNITE.EZ por Carlis343.">
     <meta name="keywords" content="fortnite.ez, fortnite-ez, fortniteez, fortnite carlis343, netlify fortnite.ez, tienda fortnite, tienda fortnite hoy, fortnite shop ez, carlis343">
     <meta name="author" content="Carlis343">
@@ -142,8 +142,9 @@
                 <span>FORTNITE<span class="logo-highlight">.EZ</span></span>
             </a>
             <nav class="nav-menu">
-                <button id="btn-shop" class="nav-btn active">shop</button>
+                <button id="btn-shop" class="nav-btn active">tienda</button>
                 <button id="btn-rankings" class="nav-btn">rankings</button>
+                <button id="btn-calculator" class="nav-btn">calculadora</button>
             </nav>
         </div>
     </header>
@@ -174,12 +175,14 @@
 
         const btnShop = document.getElementById('btn-shop');
         const btnRankings = document.getElementById('btn-rankings');
+        const btnCalculator = document.getElementById('btn-calculator');
         const iframe = document.getElementById('main-iframe');
 
-        // Evento al pulsar "Shop"
+        // Evento al pulsar "Tienda"
         btnShop.addEventListener('click', () => {
             btnShop.classList.add('active');
             btnRankings.classList.remove('active');
+            btnCalculator.classList.remove('active');
             
             iframe.style.display = 'block';
             iframe.src = 'data/shop.ez.html';
@@ -189,9 +192,20 @@
         btnRankings.addEventListener('click', () => {
             btnRankings.classList.add('active');
             btnShop.classList.remove('active');
+            btnCalculator.classList.remove('active');
             
-            iframe.style.display = 'none';
-            iframe.src = 'about:blank';
+            iframe.style.display = 'block';
+            iframe.src = 'data/rankings.ez.html';
+        });
+
+        // Evento al pulsar "Calculadora"
+        btnCalculator.addEventListener('click', () => {
+            btnCalculator.classList.add('active');
+            btnShop.classList.remove('active');
+            btnRankings.classList.remove('active');
+            
+            iframe.style.display = 'block';
+            iframe.src = 'data/calculator.ez.html';
         });
     </script>
 
