@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página Vacía</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Librería html2canvas para la exportación a PNG -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
             --bg-color: #0b0f17;
@@ -12,13 +14,30 @@
             --section-bg: #1a2332;
             --card-bg: #0f172a;
             --card-hover: #1e293b;
-            --accent: #facc15;
+            --accent: #ff3b3b;
             --text: #94a3b8;
             --text-white: #f8fafc;
             --vbucks: #38bdf8;
+            --pool-columns: 8;
         }
 
         * { box-sizing: border-box; }
+
+        /* ====== SCROLLS DECORADOS ====== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2d3748;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
 
         html, body {
             height: 100%;
@@ -36,6 +55,77 @@
 
         main {
             flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            padding: 24px;
+            max-width: 500px;
+        }
+
+        .menu-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 220px;
+            height: 160px;
+            background-color: var(--card-bg);
+            border: 1px solid #2d3748;
+            border-radius: 16px;
+            color: var(--text-white);
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.15s ease, border-color 0.2s ease;
+        }
+
+        .menu-btn.full-width {
+            grid-column: span 2;
+            width: 100%;
+            height: 90px;
+            flex-direction: row;
+            gap: 14px;
+        }
+
+        .menu-btn:hover {
+            background-color: var(--card-hover);
+            border-color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        .menu-btn svg {
+            width: 40px;
+            height: 40px;
+            stroke: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .menu-btn.full-width svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        @media (max-width: 520px) {
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+            .menu-btn {
+                width: 260px;
+            }
+            .menu-btn.full-width {
+                grid-column: span 1;
+                width: 260px;
+                height: 120px;
+                flex-direction: column;
+            }
         }
 
         /* Footer natural al final de la página */
@@ -71,18 +161,2385 @@
             font-size: 0.72rem;
             opacity: 0.65;
         }
+
+        /* ===== Modales ===== */
+        .overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(7, 10, 17, 0.88);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        .overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background-color: var(--section-bg);
+            border: 1px solid #2d3748;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 460px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 22px;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: var(--text-white);
+            font-size: 1.15rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.4rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .modal-close:hover {
+            color: var(--text-white);
+        }
+
+        .modal-body {
+            padding: 24px 22px;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 16px 22px;
+            border-top: 1px solid #2d3748;
+        }
+
+        .field-label {
+            display: block;
+            color: var(--text-white);
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .text-input {
+            width: 100%;
+            padding: 10px 12px;
+            background-color: var(--card-bg);
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            color: var(--text-white);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .text-input:focus {
+            border-color: var(--accent);
+        }
+
+        .sections-block {
+            margin-top: 20px;
+        }
+
+        .sections-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .add-section-btn {
+            background-color: #aed9f0;
+            border: 1px solid #aed9f0;
+            color: #0b3a54;
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .add-section-btn:hover {
+            opacity: 0.85;
+        }
+
+        .section-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .section-row .text-input {
+            flex: 1;
+        }
+
+        .section-row input[type="color"] {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            background: none;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .remove-section-btn {
+            background: none;
+            border: 1px solid #2d3748;
+            color: var(--text);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .remove-section-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .empty-sections-msg {
+            color: var(--text);
+            font-size: 0.85rem;
+            font-style: italic;
+            margin: 4px 0 0;
+        }
+
+        .create-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            color: #000000;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .create-btn:hover {
+            opacity: 0.85;
+        }
+
+        /* ===== Pantalla vacía tras crear ===== */
+        .result-screen {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .result-screen.active {
+            display: flex;
+        }
+
+        .back-btn {
+            background-color: var(--card-bg);
+            border: 1px solid #2d3748;
+            color: var(--text-white);
+            font-weight: 600;
+            padding: 10px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            border-color: var(--accent);
+        }
+
+        /* ===== Pantalla de Tier List ===== */
+        .tierlist-screen {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 24px 20px 40px;
+            gap: 18px;
+            position: relative;
+        }
+
+        .tierlist-screen.active {
+            display: flex;
+        }
+
+        /* Botones Flotantes Fixed a la derecha */
+        .fixed-actions-container {
+            position: fixed;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 90;
+        }
+
+        .floating-action-btn {
+            background-color: var(--section-bg);
+            border: 1px solid #2d3748;
+            color: var(--text-white);
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+        }
+
+        .floating-action-btn:hover {
+            background-color: var(--card-hover);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .tierlist-export-container {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            background-color: var(--bg-color);
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        .tierlist-title {
+            color: var(--text-white);
+            font-size: 1.6rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 0;
+        }
+
+        .tierlist-board {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .tier-row {
+            display: flex;
+            align-items: stretch;
+            min-height: 105px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #2d3748;
+        }
+
+        .tier-row-label {
+            width: 110px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 8px;
+            color: #0b0f17;
+            word-break: break-word;
+        }
+
+        .tier-row-drop {
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 6px;
+            padding: 8px;
+            background-color: var(--card-bg);
+            transition: background-color 0.15s ease;
+        }
+
+        .tier-row-drop.drag-over {
+            background-color: var(--card-hover);
+        }
+
+        .tier-item {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: grab;
+            background: #05070c;
+            flex-shrink: 0;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .tier-item.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        .tier-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #0b0f17;
+            pointer-events: none;
+        }
+
+        .tier-item .remove-x {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            width: 20px;
+            height: 20px;
+            font-size: 13px;
+            line-height: 20px;
+            text-align: center;
+            border-radius: 0 0 0 6px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .tier-item:hover .remove-x {
+            display: block;
+        }
+
+        .pool-divider {
+            border: none;
+            border-top: 2px dashed #24304488;
+            margin: 4px 0;
+        }
+
+        .pool-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .pool-search-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--section-bg);
+            padding: 12px 16px;
+            border: 1px solid #2d3748;
+            border-radius: 12px;
+        }
+
+        .pool-search-bar input[type="text"] {
+            padding: 8px 10px;
+            background-color: var(--card-bg);
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            color: var(--text-white);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            outline: none;
+            flex: 1;
+            min-width: 160px;
+        }
+
+        .pool-search-bar input[type="text"]:focus {
+            border-color: var(--accent);
+        }
+
+        /* Estilos para los botones de menú desplegable Toggle */
+        .dropdown-toggle-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-toggle-btn {
+            padding: 8px 14px;
+            background-color: var(--card-bg);
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            color: var(--text-white);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            user-select: none;
+        }
+
+        .dropdown-toggle-btn:hover {
+            border-color: var(--accent);
+        }
+
+        .dropdown-menu-content {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            background-color: var(--section-bg);
+            border: 1px solid #2d3748;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            min-width: 220px;
+            max-height: 260px;
+            overflow-y: auto;
+            z-index: 50;
+            padding: 6px;
+        }
+
+        .dropdown-menu-content.show {
+            display: block;
+        }
+
+        .dropdown-search-input {
+            width: 100%;
+            padding: 8px 10px;
+            background-color: var(--card-bg);
+            border: 1px solid #2d3748;
+            border-radius: 6px;
+            color: var(--text-white);
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            outline: none;
+        }
+
+        .dropdown-search-input:focus {
+            border-color: var(--accent);
+        }
+
+        .dropdown-clear-btn {
+            padding: 6px 8px;
+            background-color: rgba(255, 59, 59, 0.15);
+            border: 1px solid rgba(255, 59, 59, 0.3);
+            border-radius: 6px;
+            color: var(--text-white);
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 6px;
+        }
+
+        .dropdown-clear-btn:hover {
+            background-color: rgba(255, 59, 59, 0.3);
+            border-color: var(--accent);
+        }
+
+        .dropdown-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-white);
+            font-size: 0.95rem;
+        }
+
+        .dropdown-option:hover {
+            background-color: var(--card-hover);
+        }
+
+        .dropdown-option input[type="checkbox"] {
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .col-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .col-controls button {
+            background-color: var(--card-bg);
+            border: 1px solid #2d3748;
+            color: var(--text-white);
+            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.2s ease;
+        }
+
+        .col-controls button:hover {
+            border-color: var(--accent);
+        }
+
+        .col-controls span {
+            color: var(--text-white);
+            font-weight: bold;
+            font-size: 1rem;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .pool-status {
+            font-size: 0.78rem;
+            color: var(--text);
+            white-space: nowrap;
+        }
+
+        .pool-grid-wrapper {
+            max-height: 420px;
+            overflow-y: auto;
+            border: 1px solid #2d3748;
+            border-radius: 10px;
+            padding: 12px;
+            background-color: rgba(255, 255, 255, 0.015);
+        }
+
+        .pool-grid {
+            display: grid;
+            grid-template-columns: repeat(var(--pool-columns), 1fr);
+            gap: 12px;
+        }
+
+        .pool-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: grab;
+            padding: 6px;
+            border-radius: 8px;
+            transition: background-color 0.15s ease, opacity 0.15s ease;
+            text-align: center;
+        }
+
+        .pool-item:hover {
+            background-color: var(--card-hover);
+        }
+
+        .pool-item.dragging {
+            opacity: 0.4;
+        }
+
+        .pool-item img {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 1; 
+            object-fit: contain;
+            background: #0b0f17;
+            border-radius: 6px;
+            pointer-events: none;
+        }
+
+        .pool-item span {
+            font-size: 0.68rem;
+            color: var(--text);
+            line-height: 1.15;
+            max-width: 100%;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .pool-item.used {
+            display: none !important;
+        }
+
+        .pool-empty-msg,
+        .pool-loading-msg,
+        .pool-error-msg {
+            grid-column: 1 / -1;
+            color: var(--text);
+            font-size: 0.85rem;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .pool-error-msg {
+            color: var(--accent);
+        }
+
+        /* ===== Pantalla de Torneo (bracket) ===== */
+        .torneo-screen {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 24px 20px 40px;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .torneo-screen.active {
+            display: flex;
+        }
+
+        .torneo-header {
+            text-align: center;
+        }
+
+        .torneo-header h1 {
+            color: var(--text-white);
+            margin: 0 0 6px;
+            font-size: 1.4rem;
+        }
+
+        .torneo-header p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+
+        .torneo-instructions {
+            font-size: 0.9rem;
+            color: var(--vbucks);
+            font-weight: 600;
+        }
+
+        .torneo-batch-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            width: 100%;
+        }
+
+        .torneo-card {
+            background-color: var(--card-bg);
+            border: 2px solid #2d3748;
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.15s ease, border-color 0.15s ease;
+        }
+
+        .torneo-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+        }
+
+        .torneo-card img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: contain;
+            background: #0b0f17;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        .torneo-card span {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-white);
+            text-align: center;
+            pointer-events: none;
+        }
+
+        /* ===== Pantalla de Podio ===== */
+        .podium-screen {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 24px 20px 40px;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .podium-screen.active {
+            display: flex;
+        }
+
+        .podium-top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .podium-export-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 32px;
+            width: 100%;
+            padding: 12px;
+            background-color: var(--bg-color);
+        }
+
+        .podium-title {
+            color: var(--text-white);
+            font-size: 1.5rem;
+            margin: 0;
+            text-align: center;
+        }
+
+        .podium-top3 {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 24px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .podium-place {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .podium-place img {
+            object-fit: contain;
+            background: #0b0f17;
+            border-radius: 12px;
+        }
+
+        .podium-place.gold img {
+            width: 150px;
+            height: 150px;
+            border: 3px solid #ffd700;
+            box-shadow: 0 0 18px rgba(255, 215, 0, 0.45);
+        }
+
+        .podium-place.silver img {
+            width: 120px;
+            height: 120px;
+            border: 3px solid #c0c0c0;
+            box-shadow: 0 0 14px rgba(192, 192, 192, 0.4);
+        }
+
+        .podium-place.bronze img {
+            width: 110px;
+            height: 110px;
+            border: 3px solid #cd7f32;
+            box-shadow: 0 0 14px rgba(205, 127, 50, 0.4);
+        }
+
+        .podium-badge {
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 3px 12px;
+            border-radius: 999px;
+            color: #0b0f17;
+        }
+
+        .podium-place.gold .podium-badge { background-color: #ffd700; }
+        .podium-place.silver .podium-badge { background-color: #c0c0c0; }
+        .podium-place.bronze .podium-badge { background-color: #cd7f32; }
+
+        .podium-place span.podium-name {
+            color: var(--text-white);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-align: center;
+            max-width: 150px;
+        }
+
+        .podium-rest {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 520px;
+        }
+
+        .podium-rest-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background-color: var(--card-bg);
+            border: 1px solid #2d3748;
+            border-radius: 10px;
+            padding: 8px 14px;
+        }
+
+        .podium-rest-item .podium-rank {
+            font-weight: 700;
+            color: var(--text-white);
+            width: 24px;
+            text-align: center;
+        }
+
+        .podium-rest-item img {
+            width: 44px;
+            height: 44px;
+            object-fit: contain;
+            background: #0b0f17;
+            border-radius: 6px;
+        }
+
+        .podium-rest-item span.podium-name {
+            color: var(--text-white);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
     </style>
 </head>
 <body>
 
     <main>
-        <!-- Contenido principal vacío -->
+        <div class="menu-grid" id="mainMenu">
+            <button type="button" class="menu-btn" id="btnCrearTierList">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                Crear Tier List
+            </button>
+            <button type="button" class="menu-btn" id="btnCargarTierList">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                Cargar Tier List
+            </button>
+            <!-- Input file oculto para manejar la carga de archivos bin -->
+            <input type="file" id="fileInputBin" accept=".bin,.json" style="display: none;">
+
+            <button type="button" class="menu-btn" id="btnCrearTop">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.29 0 4.544.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0" />
+                </svg>
+                Crear Top
+            </button>
+            <button type="button" class="menu-btn" id="btnCargarTop">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                Cargar Top
+            </button>
+
+            <!-- Botones de torneos -->
+            <button type="button" class="menu-btn full-width" id="btnTorneoSkins">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                Torneo de Skins
+            </button>
+            <button type="button" class="menu-btn full-width" id="btnTorneoAcompanantes">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                Torneo de Acompañantes
+            </button>
+        </div>
+
+        <div class="result-screen" id="resultScreen">
+            <button type="button" class="back-btn" id="btnVolver">&larr; Volver al menú</button>
+        </div>
+
+        <div class="torneo-screen" id="torneoScreen">
+            <button type="button" class="back-btn" id="btnVolverTorneo">&larr; Cancelar torneo</button>
+            <div class="torneo-header">
+                <h1 id="torneoScreenTitle">Torneo de Acompañantes</h1>
+                <p id="torneoScreenProgress"></p>
+            </div>
+            <p class="torneo-instructions">Elige tu favorito de esta tanda</p>
+            <div class="torneo-batch-grid" id="torneoBatchGrid"></div>
+        </div>
+
+        <div class="podium-screen" id="podiumScreen">
+            <div class="podium-top-bar">
+                <button type="button" class="back-btn" id="btnVolverPodio">&larr; Volver al menú</button>
+                <button type="button" class="back-btn" id="btnFotoFinal">📷 Foto Final</button>
+            </div>
+            <div class="podium-export-container" id="podiumExportContainer">
+                <h1 class="podium-title" id="podiumTitle">¡Resultados del Torneo!</h1>
+                <div class="podium-top3" id="podiumTop3"></div>
+                <div class="podium-rest" id="podiumRest"></div>
+            </div>
+        </div>
+
+        <div class="tierlist-screen" id="tierListScreen">
+            <!-- Botones Flotantes Fixed a la derecha -->
+            <div class="fixed-actions-container">
+                <button type="button" class="floating-action-btn" id="btnExportBin">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Exportar Tier List
+                </button>
+                <button type="button" class="floating-action-btn" id="btnClearTier">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    Limpiar Tier List
+                </button>
+                <button type="button" class="floating-action-btn" id="btnExportImage">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Imagen Final
+                </button>
+            </div>
+
+            <!-- Contenedor agrupado que incluye título y tablero para la exportación -->
+            <div class="tierlist-export-container" id="tierListExportContainer">
+                <h1 class="tierlist-title" id="tierListTitleDisplay"></h1>
+                <div class="tierlist-board" id="tierListBoard"></div>
+            </div>
+
+            <hr class="pool-divider">
+
+            <div class="pool-section">
+                <!-- Barra de Opciones inferior -->
+                <div class="pool-search-bar">
+                    <input type="text" id="poolSearch" placeholder="Buscar cosmético...">
+                    
+                    <!-- Toggle Type Filter -->
+                    <div class="dropdown-toggle-container" id="typeDropdownContainer">
+                        <div class="dropdown-toggle-btn" id="typeDropdownBtn">
+                            <span>Tipos de cosméticos</span>
+                            <span>▼</span>
+                        </div>
+                        <div class="dropdown-menu-content" id="typeDropdownContent">
+                            <input type="text" class="dropdown-search-input" id="typeSearchInput" placeholder="Filtrar tipos...">
+                            <div class="dropdown-clear-btn" id="typeClearBtn">Limpiar filtros</div>
+                            <div id="typeOptionsList"></div>
+                        </div>
+                    </div>
+
+                    <!-- Toggle Introduction Filter (Temporadas) -->
+                    <div class="dropdown-toggle-container" id="introDropdownContainer">
+                        <div class="dropdown-toggle-btn" id="introDropdownBtn">
+                            <span>Temporadas</span>
+                            <span>▼</span>
+                        </div>
+                        <div class="dropdown-menu-content" id="introDropdownContent">
+                            <input type="text" class="dropdown-search-input" id="introSearchInput" placeholder="Filtrar temporadas...">
+                            <div class="dropdown-clear-btn" id="introClearBtn">Limpiar filtros</div>
+                            <div id="introOptionsList"></div>
+                        </div>
+                    </div>
+
+                    <!-- Lupa de columnas en la barra de abajo -->
+                    <div class="col-controls" style="margin-left: auto;">
+                        <span style="font-size: 0.8rem; color: var(--text-white); font-weight: 600;">Cols:</span>
+                        <button type="button" class="btnRestarCol">-</button>
+                        <span class="colCountDisplay">8</span>
+                        <button type="button" class="btnSumarCol">+</button>
+                    </div>
+
+                    <span class="pool-status" id="poolStatus"></span>
+                </div>
+
+                <div class="pool-grid-wrapper" id="poolGridWrapper">
+                    <div class="pool-grid" id="poolGrid">
+                        <p class="pool-loading-msg" id="poolLoadingMsg">Cargando cosméticos de Fortnite...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
+
+    <!-- Modal: Crear Tier List -->
+    <div class="overlay" id="tierListOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Crear Tier List</h2>
+                <button type="button" class="modal-close" data-close="tierListOverlay">&times;</button>
+            </div>
+            <div class="modal-body">
+                <label class="field-label" for="tierListName">Nombre de la Tier List</label>
+                <input type="text" id="tierListName" class="text-input" placeholder="Ej: Mejores armas de Fortnite">
+
+                <div class="sections-block">
+                    <div class="sections-header">
+                        <label class="field-label" style="margin-bottom:0;">Secciones</label>
+                        <button type="button" class="add-section-btn" id="btnAddSection">+ Añadir sección</button>
+                    </div>
+                    <div id="sectionsContainer"></div>
+                    <p class="empty-sections-msg" id="emptySectionsMsg">Todavía no hay secciones. Añade una para empezar.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="create-btn" id="btnCrearTierListConfirm">Crear</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Crear Top -->
+    <div class="overlay" id="topOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Crear Top</h2>
+                <button type="button" class="modal-close" data-close="topOverlay">&times;</button>
+            </div>
+            <div class="modal-body">
+                <label class="field-label" for="topName">Nombre del Top</label>
+                <input type="text" id="topName" class="text-input" placeholder="Ej: Top 10 skins">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="create-btn" id="btnCrearTopConfirm">Crear</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Configurar Torneo (Skins / Acompañantes) -->
+    <div class="overlay" id="torneoOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="torneoModalTitle">Configurar Torneo</h2>
+                <button type="button" class="modal-close" data-close="torneoOverlay">&times;</button>
+            </div>
+            <div class="modal-body">
+                <label class="field-label" for="torneoMaxRoundSize">Tamaño ronda máxima</label>
+                <input type="number" id="torneoMaxRoundSize" class="text-input" value="10" min="1">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="create-btn" id="btnCrearTorneoConfirm">Crear Torneo</button>
+            </div>
+        </div>
+    </div>
 
     <footer>
         <p>Datos proporcionados por <a href="https://fortnite-api.com/" target="_blank" rel="noopener noreferrer">Fortnite-API.com</a> | Creado por <strong class="creator">Carlis343</strong></p>
         <p class="copyright">© Fortnite y sus respectivos logotipos son marcas comerciales o marcas registradas de Epic Games, Inc. en EE. UU. y en otros lugares. Este sitio no está afiliado ni respaldado por Epic Games.</p>
     </footer>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var tierListOverlay = document.getElementById('tierListOverlay');
+            var topOverlay = document.getElementById('topOverlay');
+            var torneoOverlay = document.getElementById('torneoOverlay');
+            var mainMenu = document.getElementById('mainMenu');
+            var resultScreen = document.getElementById('resultScreen');
+            var sectionsContainer = document.getElementById('sectionsContainer');
+            var emptySectionsMsg = document.getElementById('emptySectionsMsg');
+
+            var tierListScreen = document.getElementById('tierListScreen');
+            var tierListExportContainer = document.getElementById('tierListExportContainer');
+            var tierListTitleDisplay = document.getElementById('tierListTitleDisplay');
+            var tierListBoard = document.getElementById('tierListBoard');
+            var poolGrid = document.getElementById('poolGrid');
+            var poolGridWrapper = document.getElementById('poolGridWrapper');
+            var poolSearch = document.getElementById('poolSearch');
+            var poolStatus = document.getElementById('poolStatus');
+
+            // Elementos del modal de Torneo
+            var torneoModalTitle = document.getElementById('torneoModalTitle');
+            var torneoMaxRoundSize = document.getElementById('torneoMaxRoundSize');
+            var currentTorneoType = '';
+
+            // Botones de exportación, limpieza flotantes e input file de carga
+            var btnExportBin = document.getElementById('btnExportBin');
+            var btnClearTier = document.getElementById('btnClearTier');
+            var btnExportImage = document.getElementById('btnExportImage');
+            var btnCargarTierList = document.getElementById('btnCargarTierList');
+            var fileInputBin = document.getElementById('fileInputBin');
+
+            // Toggle Dropdowns Elements
+            var typeDropdownBtn = document.getElementById('typeDropdownBtn');
+            var typeDropdownContent = document.getElementById('typeDropdownContent');
+            var typeSearchInput = document.getElementById('typeSearchInput');
+            var typeClearBtn = document.getElementById('typeClearBtn');
+            var typeOptionsList = document.getElementById('typeOptionsList');
+
+            var introDropdownBtn = document.getElementById('introDropdownBtn');
+            var introDropdownContent = document.getElementById('introDropdownContent');
+            var introSearchInput = document.getElementById('introSearchInput');
+            var introClearBtn = document.getElementById('introClearBtn');
+            var introOptionsList = document.getElementById('introOptionsList');
+
+            var currentTierList = null; 
+            var placedIds = {}; 
+
+            var allCosmetics = null; 
+            var cosmeticsById = {};
+            var filteredCosmetics = [];
+            var poolRenderedCount = 0;
+            var POOL_BATCH_SIZE = 60;
+            var poolLoadPending = false;
+
+            var selectedTypes = {};
+            var selectedIntros = {};
+
+            var poolColumns = 8;
+
+            // Control de menús desplegables (Toggle y cierre al hacer clic fuera)
+            typeDropdownBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                typeDropdownContent.classList.toggle('show');
+                introDropdownContent.classList.remove('show');
+            });
+
+            introDropdownBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                introDropdownContent.classList.toggle('show');
+                typeDropdownContent.classList.remove('show');
+            });
+
+            document.addEventListener('click', function() {
+                typeDropdownContent.classList.remove('show');
+                introDropdownContent.classList.remove('show');
+            });
+
+            typeDropdownContent.addEventListener('click', function(e) { e.stopPropagation(); });
+            introDropdownContent.addEventListener('click', function(e) { e.stopPropagation(); });
+
+            // Manejo de botones de columnas (inferiores)
+            document.querySelectorAll('.btnSumarCol').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    poolColumns++;
+                    updateColumns();
+                });
+            });
+
+            document.querySelectorAll('.btnRestarCol').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    if (poolColumns > 1) {
+                        poolColumns--;
+                        updateColumns();
+                    }
+                });
+            });
+
+            function updateColumns() {
+                document.querySelectorAll('.colCountDisplay').forEach(function(span) {
+                    span.textContent = poolColumns;
+                });
+                document.documentElement.style.setProperty('--pool-columns', poolColumns);
+            }
+
+            function getDragAfterElement(container, x, y) {
+                var draggableElements = [].slice.call(container.querySelectorAll('.tier-item:not(.dragging), .pool-item:not(.dragging)'));
+
+                return draggableElements.reduce(function(closest, child) {
+                    var box = child.getBoundingClientRect();
+                    var offsetX = x - box.left - box.width / 2;
+                    var offsetY = y - box.top - box.height / 2;
+                    
+                    if (y > box.top - 10 && y < box.bottom + 10) {
+                        if (offsetX < 0 && offsetX > closest.offset) {
+                            return { offset: offsetX, element: child };
+                        }
+                    }
+                    return closest;
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            }
+
+            function extractImage(item) {
+                if (!item) return null;
+                if (item.images) {
+                    return item.images.icon || item.images.smallIcon || item.images.featured ||
+                        item.images.small || item.images.large || null;
+                }
+                return item.albumArt || item.image || null;
+            }
+
+            function normalizeCosmetics(data) {
+                var list = [];
+                var categories = [
+                    { key: 'br', fallbackType: 'Cosmético BR' },
+                    { key: 'tracks', fallbackType: 'Pista de Audio' },
+                    { key: 'instruments', fallbackType: 'Instrumento' },
+                    { key: 'cars', fallbackType: 'Vehículo' },
+                    { key: 'lego', fallbackType: 'LEGO' },
+                    { key: 'legoKits', fallbackType: 'Kit LEGO' },
+                    { key: 'beans', fallbackType: 'Bean' }
+                ];
+
+                categories.forEach(function (cat) {
+                    var arr = data[cat.key];
+                    if (!Array.isArray(arr)) return;
+                    arr.forEach(function (item) {
+                        var img = extractImage(item);
+                        if (!img || !item.id) return;
+                        var typeLabel = (item.type && item.type.displayValue) || cat.fallbackType;
+                        
+                        var introVal = '';
+                        if (item.introduction) {
+                            var rawText = item.introduction.text || item.introduction.backendValue || '';
+                            introVal = rawText.replace(/introduced in\s*/gi, '').trim();
+                        }
+
+                        list.push({
+                            id: item.id,
+                            name: item.name || item.title || 'Sin nombre',
+                            image: img,
+                            type: typeLabel,
+                            intro: introVal
+                        });
+                    });
+                });
+
+                return list;
+            }
+
+            function loadCosmetics() {
+                if (allCosmetics) {
+                    return Promise.resolve(allCosmetics);
+                }
+                poolStatus.textContent = 'Cargando...';
+                return fetch('https://fortnite-api.com/v2/cosmetics')
+                    .then(function (res) {
+                        if (!res.ok) throw new Error('Respuesta no válida de la API');
+                        return res.json();
+                    })
+                    .then(function (json) {
+                        allCosmetics = normalizeCosmetics(json.data || {});
+                        allCosmetics.forEach(function (c) { cosmeticsById[c.id] = c; });
+                        populateFilters();
+                        return allCosmetics;
+                    });
+            }
+
+            function populateFilters() {
+                var types = {};
+                var intros = {};
+
+                allCosmetics.forEach(function (c) { 
+                    types[c.type] = true; 
+                    if (c.intro) intros[c.intro] = true;
+                });
+
+                renderTypeCheckboxes(Object.keys(types).sort());
+                renderIntroCheckboxes(Object.keys(intros).sort());
+            }
+
+            function renderTypeCheckboxes(typesArray, filterText = '') {
+                typeOptionsList.innerHTML = '';
+                var filtered = typesArray.filter(function(t) {
+                    return t.toLowerCase().indexOf(filterText.toLowerCase()) !== -1;
+                });
+
+                if (filtered.length === 0) {
+                    typeOptionsList.innerHTML = '<div style="padding: 6px; font-size: 0.8rem; color: var(--text); font-style: italic;">Sin resultados</div>';
+                    return;
+                }
+
+                filtered.forEach(function (t) {
+                    var label = document.createElement('label');
+                    label.className = 'dropdown-option';
+
+                    var checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = t;
+                    checkbox.checked = !!selectedTypes[t];
+
+                    checkbox.addEventListener('change', function() {
+                        if (checkbox.checked) {
+                            selectedTypes[t] = true;
+                        } else {
+                            delete selectedTypes[t];
+                        }
+                        applyPoolFilters();
+                    });
+
+                    var span = document.createElement('span');
+                    span.textContent = t;
+
+                    label.appendChild(checkbox);
+                    label.appendChild(span);
+                    typeOptionsList.appendChild(label);
+                });
+            }
+
+            function renderIntroCheckboxes(introsArray, filterText = '') {
+                introOptionsList.innerHTML = '';
+                var filtered = introsArray.filter(function(i) {
+                    return i.toLowerCase().indexOf(filterText.toLowerCase()) !== -1;
+                });
+
+                if (filtered.length === 0) {
+                    introOptionsList.innerHTML = '<div style="padding: 6px; font-size: 0.8rem; color: var(--text); font-style: italic;">Sin resultados</div>';
+                    return;
+                }
+
+                filtered.forEach(function (i) {
+                    var label = document.createElement('label');
+                    label.className = 'dropdown-option';
+
+                    var checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = i;
+                    checkbox.checked = !!selectedIntros[i];
+
+                    checkbox.addEventListener('change', function() {
+                        if (checkbox.checked) {
+                            selectedIntros[i] = true;
+                        } else {
+                            delete selectedIntros[i];
+                        }
+                        applyPoolFilters();
+                    });
+
+                    var span = document.createElement('span');
+                    span.textContent = i;
+
+                    label.appendChild(checkbox);
+                    label.appendChild(span);
+                    introOptionsList.appendChild(label);
+                });
+            }
+
+            typeClearBtn.addEventListener('click', function() {
+                selectedTypes = {};
+                typeSearchInput.value = '';
+                var types = {};
+                allCosmetics.forEach(function(c) { types[c.type] = true; });
+                renderTypeCheckboxes(Object.keys(types).sort(), '');
+                applyPoolFilters();
+            });
+
+            introClearBtn.addEventListener('click', function() {
+                selectedIntros = {};
+                introSearchInput.value = '';
+                var intros = {};
+                allCosmetics.forEach(function(c) { if (c.intro) intros[c.intro] = true; });
+                renderIntroCheckboxes(Object.keys(intros).sort(), '');
+                applyPoolFilters();
+            });
+
+            typeSearchInput.addEventListener('input', function() {
+                var types = {};
+                allCosmetics.forEach(function(c) { types[c.type] = true; });
+                renderTypeCheckboxes(Object.keys(types).sort(), typeSearchInput.value.trim());
+            });
+
+            introSearchInput.addEventListener('input', function() {
+                var intros = {};
+                allCosmetics.forEach(function(c) { if (c.intro) intros[c.intro] = true; });
+                renderIntroCheckboxes(Object.keys(intros).sort(), introSearchInput.value.trim());
+            });
+
+            function applyPoolFilters() {
+                var term = poolSearch.value.trim().toLowerCase();
+                var hasTypeSelected = Object.keys(selectedTypes).length > 0;
+                var hasIntroSelected = Object.keys(selectedIntros).length > 0;
+
+                filteredCosmetics = allCosmetics.filter(function (c) {
+                    var matchesTerm = !term || c.name.toLowerCase().indexOf(term) !== -1;
+                    var matchesType = !hasTypeSelected || !!selectedTypes[c.type];
+                    var matchesIntro = !hasIntroSelected || !!selectedIntros[c.intro];
+                    return matchesTerm && matchesType && matchesIntro;
+                });
+
+                poolRenderedCount = 0;
+                poolGrid.innerHTML = '';
+                poolStatus.textContent = filteredCosmetics.length + ' cosméticos';
+                renderNextPoolBatch();
+            }
+
+            function createPoolItemEl(cosmetic) {
+                var el = document.createElement('div');
+                el.className = 'pool-item';
+                if (placedIds[cosmetic.id]) el.classList.add('used');
+                el.setAttribute('draggable', 'true');
+                el.dataset.id = cosmetic.id;
+
+                var img = document.createElement('img');
+                img.src = cosmetic.image;
+                img.alt = cosmetic.name;
+                img.loading = 'lazy';
+
+                var span = document.createElement('span');
+                span.textContent = cosmetic.name;
+
+                el.appendChild(img);
+                el.appendChild(span);
+
+                el.addEventListener('dragstart', function (e) {
+                    e.dataTransfer.setData('text/plain', cosmetic.id);
+                    setTimeout(function() { el.classList.add('dragging'); }, 0);
+                });
+
+                el.addEventListener('dragend', function () {
+                    el.classList.remove('dragging');
+                    poolGrid.querySelectorAll('.pool-item').forEach(function(item) {
+                        item.classList.remove('drag-over');
+                    });
+                });
+
+                el.addEventListener('dragover', function (e) {
+                    e.preventDefault();
+                    var draggingPoolItem = poolGrid.querySelector('.pool-item.dragging');
+                    if (draggingPoolItem && draggingPoolItem !== el) {
+                        var afterElement = getDragAfterElement(poolGrid, e.clientX, e.clientY);
+                        if (afterElement == null) {
+                            poolGrid.appendChild(draggingPoolItem);
+                        } else {
+                            poolGrid.insertBefore(draggingPoolItem, afterElement);
+                        }
+                    }
+                });
+
+                el.addEventListener('click', function () {
+                    var activeRow = tierListBoard.querySelector('.tier-row-drop.selected-target');
+                    if (activeRow && !placedIds[cosmetic.id]) {
+                        placeItemInRow(activeRow, cosmetic.id);
+                    }
+                });
+
+                return el;
+            }
+
+            function renderNextPoolBatch() {
+                if (poolLoadPending) return;
+                var msg = document.getElementById('poolLoadingMsg');
+                if (msg) msg.remove();
+
+                if (filteredCosmetics.length === 0) {
+                    var empty = document.createElement('p');
+                    empty.className = 'pool-empty-msg';
+                    empty.textContent = 'No se encontraron cosméticos con ese filtro.';
+                    poolGrid.appendChild(empty);
+                    return;
+                }
+
+                var next = filteredCosmetics.slice(poolRenderedCount, poolRenderedCount + POOL_BATCH_SIZE);
+                next.forEach(function (c) {
+                    poolGrid.appendChild(createPoolItemEl(c));
+                });
+                poolRenderedCount += next.length;
+            }
+
+            poolGridWrapper.addEventListener('scroll', function () {
+                if (poolRenderedCount >= filteredCosmetics.length) return;
+                var nearBottom = poolGridWrapper.scrollTop + poolGridWrapper.clientHeight >= poolGridWrapper.scrollHeight - 120;
+                if (nearBottom) renderNextPoolBatch();
+            });
+
+            poolSearch.addEventListener('input', debounce(applyPoolFilters, 250));
+
+            function debounce(fn, wait) {
+                var t;
+                return function () {
+                    clearTimeout(t);
+                    var args = arguments;
+                    t = setTimeout(function () { fn.apply(null, args); }, wait);
+                };
+            }
+
+            function buildTierListBoard(restoredSections = null) {
+                tierListBoard.innerHTML = '';
+                placedIds = {};
+
+                var sectionsToBuild = restoredSections || currentTierList.sections;
+
+                sectionsToBuild.forEach(function (section, index) {
+                    var row = document.createElement('div');
+                    row.className = 'tier-row';
+
+                    var label = document.createElement('div');
+                    label.className = 'tier-row-label';
+                    label.style.backgroundColor = section.color;
+                    label.textContent = section.name || '';
+
+                    var drop = document.createElement('div');
+                    drop.className = 'tier-row-drop';
+                    drop.dataset.sectionIndex = index;
+
+                    drop.addEventListener('dragover', function (e) {
+                        e.preventDefault();
+                        drop.classList.add('drag-over');
+
+                        var draggingItem = document.querySelector('.tier-item.dragging');
+                        if (draggingItem) {
+                            var afterElement = getDragAfterElement(drop, e.clientX, e.clientY);
+                            if (afterElement == null) {
+                                drop.appendChild(draggingItem);
+                            } else {
+                                drop.insertBefore(draggingItem, afterElement);
+                            }
+                        }
+                    });
+
+                    drop.addEventListener('dragleave', function () {
+                        drop.classList.remove('drag-over');
+                    });
+
+                    drop.addEventListener('drop', function (e) {
+                        e.preventDefault();
+                        drop.classList.remove('drag-over');
+                        var draggingItem = document.querySelector('.tier-item.dragging');
+                        
+                        if (!draggingItem) {
+                            var id = e.dataTransfer.getData('text/plain');
+                            if (id && !placedIds[id]) {
+                                var afterElement = getDragAfterElement(drop, e.clientX, e.clientY);
+                                placeItemInRow(drop, id, afterElement);
+                            }
+                        }
+                    });
+
+                    drop.addEventListener('click', function (e) {
+                        if (e.target === drop) {
+                            tierListBoard.querySelectorAll('.tier-row-drop').forEach(function (d) {
+                                d.classList.remove('selected-target');
+                            });
+                            drop.classList.add('selected-target');
+                        }
+                    });
+
+                    row.appendChild(label);
+                    row.appendChild(drop);
+                    tierListBoard.appendChild(row);
+
+                    if (section.items && Array.isArray(section.items)) {
+                        section.items.forEach(function(itemId) {
+                            placeItemInRow(drop, itemId);
+                        });
+                    }
+                });
+            }
+
+            function placeItemInRow(dropEl, id, afterElement = null) {
+                var cosmetic = cosmeticsById[id];
+                if (!cosmetic) return;
+
+                placedIds[id] = true;
+
+                var item = document.createElement('div');
+                item.className = 'tier-item';
+                item.dataset.id = id;
+                item.setAttribute('draggable', 'true');
+
+                var img = document.createElement('img');
+                img.src = cosmetic.image;
+                img.alt = cosmetic.name;
+                img.title = cosmetic.name;
+
+                var removeBtn = document.createElement('span');
+                removeBtn.className = 'remove-x';
+                removeBtn.innerHTML = '&times;';
+                
+                removeBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    item.remove();
+                    delete placedIds[id];
+                    var poolEl = poolGrid.querySelector('.pool-item[data-id="' + id + '"]');
+                    if (poolEl) poolEl.classList.remove('used');
+                });
+
+                item.addEventListener('dragstart', function (e) {
+                    e.dataTransfer.setData('text/plain', id);
+                    setTimeout(function() { item.classList.add('dragging'); }, 0);
+                });
+
+                item.addEventListener('dragend', function () {
+                    item.classList.remove('dragging');
+                    tierListBoard.querySelectorAll('.tier-row-drop').forEach(function (d) {
+                        d.classList.remove('drag-over');
+                    });
+                });
+
+                item.appendChild(img);
+                item.appendChild(removeBtn);
+                
+                if (afterElement) {
+                    dropEl.insertBefore(item, afterElement);
+                } else {
+                    dropEl.appendChild(item);
+                }
+
+                var poolEl = poolGrid.querySelector('.pool-item[data-id="' + id + '"]');
+                if (poolEl) poolEl.classList.add('used');
+            }
+
+            btnClearTier.addEventListener('click', function() {
+                if (!currentTierList) return;
+                if (confirm("¿Estás seguro de que deseas vaciar toda la tier list?")) {
+                    buildTierListBoard(); 
+                }
+            });
+
+            btnExportBin.addEventListener('click', function() {
+                if (!currentTierList) return;
+
+                var sectionsData = [];
+                tierListBoard.querySelectorAll('.tier-row').forEach(function(row) {
+                    var nameText = row.querySelector('.tier-row-label').textContent;
+                    var bgColor = row.querySelector('.tier-row-label').style.backgroundColor;
+                    
+                    var itemIds = [];
+                    row.querySelectorAll('.tier-item').forEach(function(it) {
+                        itemIds.push(it.dataset.id);
+                    });
+
+                    sectionsData.push({
+                        name: nameText,
+                        color: bgColor,
+                        items: itemIds
+                    });
+                });
+
+                var exportObj = {
+                    title: currentTierList.name,
+                    sections: sectionsData,
+                    filters: {
+                        searchTerm: poolSearch.value,
+                        selectedTypes: Object.keys(selectedTypes),
+                        selectedIntros: Object.keys(selectedIntros)
+                    },
+                    columns: poolColumns
+                };
+
+                var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
+                var downloadAnchor = document.createElement('a');
+                downloadAnchor.setAttribute("href", dataStr);
+                downloadAnchor.setAttribute("download", (currentTierList.name || "tierlist") + ".bin");
+                document.body.appendChild(downloadAnchor);
+                downloadAnchor.click();
+                downloadAnchor.remove();
+            });
+
+            btnCargarTierList.addEventListener('click', function() {
+                fileInputBin.click();
+            });
+
+            fileInputBin.addEventListener('change', function(e) {
+                var file = e.target.files[0];
+                if (!file) return;
+
+                var reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        var importedData = JSON.parse(event.target.result);
+                        if (!importedData.sections || !Array.isArray(importedData.sections)) {
+                            throw new Error("Formato de archivo inválido.");
+                        }
+
+                        loadCosmetics().then(function() {
+                            currentTierList = {
+                                name: importedData.title || "Tier List Importada",
+                                sections: importedData.sections
+                            };
+
+                            tierListTitleDisplay.textContent = currentTierList.name;
+
+                            if (importedData.columns) {
+                                poolColumns = importedData.columns;
+                                updateColumns();
+                            }
+
+                            if (importedData.filters) {
+                                poolSearch.value = importedData.filters.searchTerm || "";
+                                
+                                selectedTypes = {};
+                                if (importedData.filters.selectedTypes) {
+                                    importedData.filters.selectedTypes.forEach(function(t) { selectedTypes[t] = true; });
+                                }
+
+                                selectedIntros = {};
+                                if (importedData.filters.selectedIntros) {
+                                    importedData.filters.selectedIntros.forEach(function(i) { selectedIntros[i] = true; });
+                                }
+
+                                var types = {};
+                                var intros = {};
+                                allCosmetics.forEach(function (c) { 
+                                    types[c.type] = true; 
+                                    if (c.intro) intros[c.intro] = true;
+                                });
+                                renderTypeCheckboxes(Object.keys(types).sort());
+                                renderIntroCheckboxes(Object.keys(intros).sort());
+                            }
+
+                            buildTierListBoard(importedData.sections);
+
+                            mainMenu.style.display = 'none';
+                            tierListScreen.classList.add('active');
+
+                            poolStatus.textContent = allCosmetics.length + ' cosméticos cargados';
+                            applyPoolFilters();
+                            
+                            fileInputBin.value = '';
+                        }).catch(function(err) {
+                            console.error(err);
+                            alert("Error al cargar los cosméticos de la API para mostrar la tier list.");
+                        });
+
+                    } catch (err) {
+                        console.error(err);
+                        alert("El archivo seleccionado no es un archivo .bin válido de Tier List.");
+                        fileInputBin.value = '';
+                    }
+                };
+                reader.readAsText(file);
+            });
+
+            btnExportImage.addEventListener('click', function() {
+                if (!currentTierList) return;
+
+                html2canvas(tierListExportContainer, {
+                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bg-color').trim(),
+                    scale: 2,
+                    useCORS: true
+                }).then(function(canvas) {
+                    var imageURL = canvas.toDataURL("image/png");
+                    var downloadAnchor = document.createElement('a');
+                    downloadAnchor.setAttribute("href", imageURL);
+                    downloadAnchor.setAttribute("download", (currentTierList.name || "tierlist") + "_final.png");
+                    document.body.appendChild(downloadAnchor);
+                    downloadAnchor.click();
+                    downloadAnchor.remove();
+                }).catch(function(err) {
+                    console.error("Error al generar la imagen:", err);
+                    alert("Hubo un error al generar la imagen final.");
+                });
+            });
+
+            function openTierListScreen(name, sections) {
+                currentTierList = { name: name, sections: sections };
+                tierListTitleDisplay.textContent = name;
+                buildTierListBoard();
+
+                mainMenu.style.display = 'none';
+                tierListScreen.classList.add('active');
+                updateColumns();
+
+                loadCosmetics().then(function () {
+                    poolStatus.textContent = allCosmetics.length + ' cosméticos cargados';
+                    applyPoolFilters();
+                }).catch(function (err) {
+                    console.error(err);
+                    poolGrid.innerHTML = '<p class="pool-error-msg">No se pudieron cargar los cosméticos. Comprueba tu conexión e inténtalo de nuevo.</p>';
+                });
+            }
+
+            function openModal(overlay) {
+                overlay.classList.add('active');
+            }
+
+            function closeModal(overlay) {
+                overlay.classList.remove('active');
+            }
+
+            function updateEmptySectionsMsg() {
+                emptySectionsMsg.style.display = sectionsContainer.children.length === 0 ? 'block' : 'none';
+            }
+
+            function hexToHue(hex) {
+                var r = parseInt(hex.slice(1, 3), 16) / 255;
+                var g = parseInt(hex.slice(3, 5), 16) / 255;
+                var b = parseInt(hex.slice(5, 7), 16) / 255;
+                var max = Math.max(r, g, b), min = Math.min(r, g, b);
+                var h = 0;
+                var d = max - min;
+                if (d !== 0) {
+                    switch (max) {
+                        case r: h = ((g - b) / d) % 6; break;
+                        case g: h = (b - r) / d + 2; break;
+                        default: h = (r - g) / d + 4; break;
+                    }
+                    h *= 60;
+                    if (h < 0) h += 360;
+                }
+                return h;
+            }
+
+            function hslToHex(h, s, l) {
+                s /= 100; l /= 100;
+                var k = function (n) { return (n + h / 30) % 12; };
+                var a = s * Math.min(l, 1 - l);
+                var f = function (n) {
+                    return l - a * Math.max(-1, Math.min(Math.min(k(n) - 3, 9 - k(n)), 1));
+                };
+                var toHex = function (x) {
+                    return Math.round(255 * x).toString(16).padStart(2, '0');
+                };
+                return '#' + toHex(f(0)) + toHex(f(8)) + toHex(f(4));
+            }
+
+            function circularDistance(a, b) {
+                var d = Math.abs(a - b) % 360;
+                return d > 180 ? 360 - d : d;
+            }
+
+            function getExistingHues() {
+                var hues = [];
+                sectionsContainer.querySelectorAll('input[type="color"]').forEach(function (input) {
+                    hues.push(hexToHue(input.value));
+                });
+                return hues;
+            }
+
+            function generateDistinctColor() {
+                var existingHues = getExistingHues();
+                var n = existingHues.length;
+                var minGap = n === 0 ? 0 : Math.max(25, 300 / (n + 1));
+                var bestHue = Math.random() * 360;
+                var bestDist = -1;
+
+                for (var attempt = 0; attempt < 300; attempt++) {
+                    var h = Math.random() * 360;
+                    var dist = n === 0 ? 361 : Math.min.apply(null, existingHues.map(function (e) {
+                        return circularDistance(h, e);
+                    }));
+                    if (dist > bestDist) {
+                        bestDist = dist;
+                        bestHue = h;
+                    }
+                    if (dist >= minGap) {
+                        bestHue = h;
+                        break;
+                    }
+                }
+
+                var s = 65 + Math.random() * 20; 
+                var l = 45 + Math.random() * 10; 
+                return hslToHex(bestHue, s, l);
+            }
+
+            function addSectionRow() {
+                var row = document.createElement('div');
+                row.className = 'section-row';
+
+                var colorInput = document.createElement('input');
+                colorInput.type = 'color';
+                colorInput.value = generateDistinctColor();
+
+                var textInput = document.createElement('input');
+                textInput.type = 'text';
+                textInput.className = 'text-input';
+                textInput.placeholder = 'Nombre de la sección';
+
+                var removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'remove-section-btn';
+                removeBtn.innerHTML = '&times;';
+                removeBtn.addEventListener('click', function () {
+                    row.remove();
+                    updateEmptySectionsMsg();
+                });
+
+                row.appendChild(colorInput);
+                row.appendChild(textInput);
+                row.appendChild(removeBtn);
+                sectionsContainer.appendChild(row);
+                updateEmptySectionsMsg();
+            }
+
+            function showResultScreen() {
+                mainMenu.style.display = 'none';
+                resultScreen.classList.add('active');
+            }
+
+            function goBackToMenu() {
+                resultScreen.classList.remove('active');
+                torneoScreen.classList.remove('active');
+                podiumScreen.classList.remove('active');
+                mainMenu.style.display = 'grid';
+            }
+
+            /* ===================== TORNEO (BRACKETS) ===================== */
+            var torneoScreen = document.getElementById('torneoScreen');
+            var torneoScreenTitle = document.getElementById('torneoScreenTitle');
+            var torneoScreenProgress = document.getElementById('torneoScreenProgress');
+            var torneoBatchGrid = document.getElementById('torneoBatchGrid');
+            var btnVolverTorneo = document.getElementById('btnVolverTorneo');
+
+            var podiumScreen = document.getElementById('podiumScreen');
+            var podiumExportContainer = document.getElementById('podiumExportContainer');
+            var podiumTitle = document.getElementById('podiumTitle');
+            var podiumTop3 = document.getElementById('podiumTop3');
+            var podiumRest = document.getElementById('podiumRest');
+            var btnVolverPodio = document.getElementById('btnVolverPodio');
+            var btnFotoFinal = document.getElementById('btnFotoFinal');
+
+            var torneoApiCache = {}; // cache por tipo de la API: { sidekick: [...], outfit: [...] }
+
+            var TORNEO_JUNK_NAME_PATTERNS = [/recruit/i, /\btbd\b/i, /\bnpc\b/i];
+
+            function isRealReleasedCosmetic(item) {
+                var name = (item.name || '').trim();
+                if (!name) return false;
+                if (name.toLowerCase() === 'random') return false;
+                if (TORNEO_JUNK_NAME_PATTERNS.some(function (re) { return re.test(name); })) return false;
+                
+                // NUEVO FILTRO: Excluir si el nombre contiene "SET_" (sin distinción de mayúsculas/minúsculas) o un "_"
+                if (/set_/i.test(name) || name.indexOf('_') !== -1) return false;
+
+                // Sin temporada/capítulo de introducción = probablemente sin lanzar o de prueba interna
+                if (!item.introduction) return false;
+                return true;
+            }
+
+            function loadCosmeticsByApiType(apiType) {
+                if (torneoApiCache[apiType]) {
+                    return Promise.resolve(torneoApiCache[apiType]);
+                }
+                return fetch('https://fortnite-api.com/v2/cosmetics/br/search/all?type=' + apiType)
+                    .then(function (res) {
+                        if (!res.ok) throw new Error('Respuesta no válida de la API');
+                        return res.json();
+                    })
+                    .then(function (json) {
+                        var arr = (json && json.data) || [];
+                        var list = arr
+                            .filter(isRealReleasedCosmetic)
+                            .map(function (item) {
+                                var img = item.images && (item.images.icon || item.images.smallIcon || item.images.featured);
+                                return {
+                                    id: item.id,
+                                    name: item.name || 'Sin nombre',
+                                    image: img || null
+                                };
+                            })
+                            .filter(function (c) { return c.id && c.image; });
+                        torneoApiCache[apiType] = list;
+                        return list;
+                    });
+            }
+
+            var TORNEO_CONFIG = {
+                acompanantes: { apiType: 'sidekick', title: 'Torneo de Acompañantes' },
+                skins: { apiType: 'outfit', title: 'Torneo de Skins' }
+            };
+
+            var torneoBatchSize = 10;                          // tamaño de tanda configurado (rondas por encima del umbral)
+            var TORNEO_HEAD_TO_HEAD_THRESHOLD = 10;             // a partir de esta cantidad (o menos), bracket 1 vs 1
+
+            var torneoRoundItems = [];      // pool que entra a jugarse en la ronda actual
+            var torneoRoundBatches = [];    // tandas/enfrentamientos precalculados de la ronda actual
+            var torneoBatchIndex = 0;
+            var torneoRoundWinners = [];
+            var torneoRoundNumber = 1;
+            var torneoEliminatedByRound = {}; // { roundNumber: [items eliminados en esa ronda] }
+
+            var torneoThirdPlaceContenders = null; // los 2 perdedores de semifinales, en espera de su partido
+            var torneoChampion = null;
+            var torneoRunnerUp = null;
+            var torneoThirdPlace = null;
+            var torneoFourthPlace = null;
+            var torneoSpecialMatchCallback = null; // usado para el partido por el 3er puesto
+
+            function shuffleArray(arr) {
+                for (var i = arr.length - 1; i > 0; i--) {
+                    var j = Math.floor(Math.random() * (i + 1));
+                    var tmp = arr[i];
+                    arr[i] = arr[j];
+                    arr[j] = tmp;
+                }
+                return arr;
+            }
+
+            function chunkArray(arr, size) {
+                var out = [];
+                for (var i = 0; i < arr.length; i += size) {
+                    out.push(arr.slice(i, i + size));
+                }
+                return out;
+            }
+
+            function nextPowerOfTwo(n) {
+                var p = 1;
+                while (p < n) { p *= 2; }
+                return p;
+            }
+
+            function isKnockoutZone(n) {
+                return n <= TORNEO_HEAD_TO_HEAD_THRESHOLD;
+            }
+
+            // Construye los enfrentamientos de una ronda. En zona de bracket (<=10),
+            // solo se reparten "byes" (pases directos) en la primera ronda de esa zona,
+            // lo justo para que a partir de ahí todo sea limpio: cuartos, semis, final.
+            function buildRoundBatches(poolItems) {
+                if (!isKnockoutZone(poolItems.length)) {
+                    return chunkArray(poolItems, torneoBatchSize);
+                }
+
+                var bracketSize = nextPowerOfTwo(poolItems.length);
+                var byes = bracketSize - poolItems.length;
+                var byeItems = poolItems.slice(0, byes);
+                var matchItems = poolItems.slice(byes);
+
+                var batches = chunkArray(matchItems, 2);
+                byeItems.forEach(function (b) { batches.push([b]); });
+                return batches;
+            }
+
+            function trackEliminated(round, items) {
+                if (!items.length) return;
+                if (!torneoEliminatedByRound[round]) {
+                    torneoEliminatedByRound[round] = [];
+                }
+                torneoEliminatedByRound[round] = torneoEliminatedByRound[round].concat(items);
+            }
+
+            function startTorneo(type, maxRound) {
+                var config = TORNEO_CONFIG[type];
+                if (!config) {
+                    alert('Tipo de torneo no reconocido.');
+                    return;
+                }
+
+                loadCosmeticsByApiType(config.apiType).then(function (pool) {
+                    if (pool.length < 2) {
+                        alert('No hay suficientes cosméticos de este tipo cargados para el torneo.');
+                        return;
+                    }
+
+                    torneoBatchSize = Math.max(2, maxRound);
+                    torneoRoundNumber = 1;
+                    torneoEliminatedByRound = {};
+                    torneoThirdPlaceContenders = null;
+                    torneoChampion = null;
+                    torneoRunnerUp = null;
+                    torneoThirdPlace = null;
+                    torneoFourthPlace = null;
+
+                    torneoRoundItems = shuffleArray(pool.slice());
+
+                    torneoScreenTitle.textContent = config.title;
+
+                    mainMenu.style.display = 'none';
+                    torneoScreen.classList.add('active');
+                    startRound();
+                }).catch(function (err) {
+                    console.error(err);
+                    alert('No se pudieron cargar los cosméticos. Comprueba tu conexión e inténtalo de nuevo.');
+                });
+            }
+
+            function startRound() {
+                torneoRoundBatches = buildRoundBatches(torneoRoundItems);
+                torneoBatchIndex = 0;
+                torneoRoundWinners = [];
+                renderTorneoBatch();
+            }
+
+            function renderTorneoBatch() {
+                if (torneoBatchIndex >= torneoRoundBatches.length) {
+                    finishRound();
+                    return;
+                }
+
+                var batch = torneoRoundBatches[torneoBatchIndex];
+                var totalBatches = torneoRoundBatches.length;
+                var currentBatchNumber = torneoBatchIndex + 1;
+
+                var roundLabel = roundLabelFor(torneoRoundItems.length, batch.length, totalBatches);
+
+                torneoScreenProgress.textContent =
+                    roundLabel + ' — Enfrentamiento ' + currentBatchNumber + ' de ' + totalBatches +
+                    ' (' + torneoRoundItems.length + ' en juego)';
+
+                renderBatchCards(batch, function (item) {
+                    selectTorneoWinner(item, batch);
+                });
+            }
+
+            function roundLabelFor(poolLength, batchLength, totalBatches) {
+                if (!isKnockoutZone(poolLength)) {
+                    return 'Ronda ' + torneoRoundNumber;
+                }
+                if (poolLength === 2) return 'FINAL';
+                if (poolLength === 4) return 'Semifinal';
+                if (poolLength === 8) return 'Cuartos de final';
+                if (batchLength === 1) return 'Ronda ' + torneoRoundNumber + ' (pase directo)';
+                return 'Ronda ' + torneoRoundNumber + ' — Top ' + poolLength;
+            }
+
+            function renderBatchCards(batch, onPick) {
+                torneoBatchGrid.innerHTML = '';
+                batch.forEach(function (item) {
+                    var card = document.createElement('div');
+                    card.className = 'torneo-card';
+
+                    var img = document.createElement('img');
+                    img.src = item.image;
+                    img.alt = item.name;
+
+                    var span = document.createElement('span');
+                    span.textContent = item.name;
+
+                    card.appendChild(img);
+                    card.appendChild(span);
+
+                    card.addEventListener('click', function () {
+                        onPick(item);
+                    });
+
+                    torneoBatchGrid.appendChild(card);
+                });
+            }
+
+            function selectTorneoWinner(item, batch) {
+                torneoRoundWinners.push(item);
+
+                var eliminated = batch.filter(function (b) { return b.id !== item.id; });
+                trackEliminated(torneoRoundNumber, eliminated);
+
+                torneoBatchIndex++;
+                renderTorneoBatch();
+            }
+
+            function finishRound() {
+                // Semifinales reales: ronda de 4 items jugada en 2 enfrentamientos 1 vs 1
+                var wasCleanSemifinal = torneoRoundItems.length === 4 &&
+                    torneoRoundBatches.length === 2 &&
+                    torneoRoundBatches.every(function (b) { return b.length === 2; });
+
+                if (wasCleanSemifinal) {
+                    var semiLosers = torneoEliminatedByRound[torneoRoundNumber] || [];
+                    if (semiLosers.length === 2) {
+                        torneoThirdPlaceContenders = semiLosers;
+                        torneoEliminatedByRound[torneoRoundNumber] = [];
+                    }
+                }
+
+                if (torneoRoundWinners.length === 1) {
+                    torneoChampion = torneoRoundWinners[0];
+
+                    var finalElims = torneoEliminatedByRound[torneoRoundNumber] || [];
+                    if (torneoRoundItems.length === 2 && finalElims.length === 1) {
+                        torneoRunnerUp = finalElims[0];
+                        torneoEliminatedByRound[torneoRoundNumber] = [];
+                    }
+
+                    resolveThirdPlaceThenFinish();
+                    return;
+                }
+
+                torneoRoundItems = shuffleArray(torneoRoundWinners.slice());
+                torneoRoundNumber++;
+                startRound();
+            }
+
+            function resolveThirdPlaceThenFinish() {
+                if (torneoThirdPlaceContenders && torneoThirdPlaceContenders.length === 2) {
+                    var contenders = torneoThirdPlaceContenders;
+                    torneoThirdPlaceContenders = null;
+
+                    torneoScreenProgress.textContent = 'Partido por el 3er puesto (' + contenders.length + ' en juego)';
+                    renderBatchCards(contenders, function (item) {
+                        var loser = contenders.filter(function (c) { return c.id !== item.id; })[0];
+                        torneoThirdPlace = item;
+                        torneoFourthPlace = loser || null;
+                        finishTorneo();
+                    });
+                    return;
+                }
+
+                if (torneoThirdPlaceContenders && torneoThirdPlaceContenders.length === 1) {
+                    torneoThirdPlace = torneoThirdPlaceContenders[0];
+                    torneoThirdPlaceContenders = null;
+                }
+
+                finishTorneo();
+            }
+
+            function finishTorneo() {
+                var ranking = [];
+                if (torneoChampion) ranking.push(torneoChampion);
+                if (torneoRunnerUp) ranking.push(torneoRunnerUp);
+                if (torneoThirdPlace) ranking.push(torneoThirdPlace);
+                if (torneoFourthPlace) ranking.push(torneoFourthPlace);
+
+                for (var r = torneoRoundNumber; r >= 1 && ranking.length < 10; r--) {
+                    var elims = torneoEliminatedByRound[r] || [];
+                    ranking = ranking.concat(elims);
+                }
+                ranking = ranking.slice(0, 10);
+
+                torneoScreen.classList.remove('active');
+                showPodium(ranking);
+            }
+
+            function showPodium(ranking) {
+                podiumTop3.innerHTML = '';
+                podiumRest.innerHTML = '';
+
+                var placeConfig = [
+                    { cls: 'gold', label: '🥇 1º' },
+                    { cls: 'silver', label: '🥈 2º' },
+                    { cls: 'bronze', label: '🥉 3º' }
+                ];
+
+                // Orden visual del podio: 2º, 1º, 3º (como un podio real)
+                var visualOrder = [1, 0, 2];
+                visualOrder.forEach(function (idx) {
+                    if (!ranking[idx]) return;
+                    var item = ranking[idx];
+                    var cfg = placeConfig[idx];
+
+                    var place = document.createElement('div');
+                    place.className = 'podium-place ' + cfg.cls;
+
+                    var badge = document.createElement('div');
+                    badge.className = 'podium-badge';
+                    badge.textContent = cfg.label;
+
+                    var img = document.createElement('img');
+                    img.src = item.image;
+                    img.alt = item.name;
+                    img.crossOrigin = 'anonymous';
+
+                    var name = document.createElement('span');
+                    name.className = 'podium-name';
+                    name.textContent = item.name;
+
+                    place.appendChild(badge);
+                    place.appendChild(img);
+                    place.appendChild(name);
+                    podiumTop3.appendChild(place);
+                });
+
+                for (var i = 3; i < ranking.length; i++) {
+                    var it = ranking[i];
+                    var row = document.createElement('div');
+                    row.className = 'podium-rest-item';
+
+                    var rank = document.createElement('span');
+                    rank.className = 'podium-rank';
+                    rank.textContent = (i + 1) + 'º';
+
+                    var img2 = document.createElement('img');
+                    img2.src = it.image;
+                    img2.alt = it.name;
+                    img2.crossOrigin = 'anonymous';
+
+                    var name2 = document.createElement('span');
+                    name2.className = 'podium-name';
+                    name2.textContent = it.name;
+
+                    row.appendChild(rank);
+                    row.appendChild(img2);
+                    row.appendChild(name2);
+                    podiumRest.appendChild(row);
+                }
+
+                mainMenu.style.display = 'none';
+                podiumScreen.classList.add('active');
+            }
+
+            btnVolverTorneo.addEventListener('click', function () {
+                if (confirm('¿Seguro que quieres cancelar el torneo? Se perderá el progreso.')) {
+                    goBackToMenu();
+                }
+            });
+
+            btnVolverPodio.addEventListener('click', goBackToMenu);
+
+            btnFotoFinal.addEventListener('click', function () {
+                html2canvas(podiumExportContainer, {
+                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bg-color').trim(),
+                    scale: 2,
+                    useCORS: true
+                }).then(function (canvas) {
+                    var imageURL = canvas.toDataURL('image/png');
+                    var downloadAnchor = document.createElement('a');
+                    downloadAnchor.setAttribute('href', imageURL);
+                    downloadAnchor.setAttribute('download', 'top10_torneo.png');
+                    document.body.appendChild(downloadAnchor);
+                    downloadAnchor.click();
+                    downloadAnchor.remove();
+                }).catch(function (err) {
+                    console.error('Error al generar la imagen:', err);
+                    alert('Hubo un error al generar la imagen final.');
+                });
+            });
+
+            document.getElementById('btnCrearTierList').addEventListener('click', function () {
+                openModal(tierListOverlay);
+            });
+
+            document.getElementById('btnCrearTop').addEventListener('click', function () {
+                openModal(topOverlay);
+            });
+
+            document.getElementById('btnTorneoSkins').addEventListener('click', function () {
+                currentTorneoType = 'skins';
+                torneoModalTitle.textContent = 'Torneo de Skins';
+                torneoMaxRoundSize.value = '10';
+                openModal(torneoOverlay);
+            });
+
+            document.getElementById('btnTorneoAcompanantes').addEventListener('click', function () {
+                currentTorneoType = 'acompanantes';
+                torneoModalTitle.textContent = 'Torneo de Acompañantes';
+                torneoMaxRoundSize.value = '10';
+                openModal(torneoOverlay);
+            });
+
+            document.getElementById('btnCrearTorneoConfirm').addEventListener('click', function () {
+                var maxRound = parseInt(torneoMaxRoundSize.value);
+                if (isNaN(maxRound) || maxRound < 2) {
+                    alert('Por favor, introduce un tamaño de ronda máxima válido (mínimo 2).');
+                    return;
+                }
+                closeModal(torneoOverlay);
+
+                if (currentTorneoType === 'acompanantes' || currentTorneoType === 'skins') {
+                    startTorneo(currentTorneoType, maxRound);
+                } else {
+                    showResultScreen();
+                }
+            });
+
+            document.querySelectorAll('.modal-close').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    closeModal(document.getElementById(btn.getAttribute('data-close')));
+                });
+            });
+
+            [tierListOverlay, topOverlay, torneoOverlay].forEach(function (overlay) {
+                overlay.addEventListener('click', function (e) {
+                    if (e.target === overlay) {
+                        closeModal(overlay);
+                    }
+                });
+            });
+
+            document.getElementById('btnAddSection').addEventListener('click', addSectionRow);
+
+            document.getElementById('btnCrearTierListConfirm').addEventListener('click', function () {
+                var name = document.getElementById('tierListName').value.trim();
+                var rows = sectionsContainer.querySelectorAll('.section-row');
+
+                if (!name) {
+                    alert('Ponle un nombre a tu Tier List antes de crearla.');
+                    return;
+                }
+                if (rows.length === 0) {
+                    alert('Añade al menos una sección antes de crear la Tier List.');
+                    return;
+                }
+
+                var sections = [];
+                rows.forEach(function (row) {
+                    var color = row.querySelector('input[type="color"]').value;
+                    var sectionName = row.querySelector('input[type="text"]').value.trim();
+                    sections.push({ color: color, name: sectionName });
+                });
+
+                closeModal(tierListOverlay);
+                openTierListScreen(name, sections);
+            });
+
+            document.getElementById('btnCrearTopConfirm').addEventListener('click', function () {
+                closeModal(topOverlay);
+                showResultScreen();
+            });
+
+            document.getElementById('btnVolver').addEventListener('click', goBackToMenu);
+        });
+    </script>
 </body>
 </html>
