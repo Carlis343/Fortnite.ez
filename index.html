@@ -4,23 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- SEO Básico -->
-    <title>FORTNITE.EZ</title>
-    <meta name="description" content="Consulta la tienda diaria de Fortnite, objetos, precios, cosméticos y rankings en tiempo real con FORTNITE.EZ por Carlis343.">
-    <meta name="keywords" content="fortnite.ez, fortnite-ez, fortniteez, fortnite carlis343, netlify fortnite.ez, tienda fortnite, tienda fortnite hoy, fortnite shop ez, carlis343">
+    <!-- Preconexión de recursos para rendimiento y SEO (Core Web Vitals) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fortnite-api.com">
+
+    <!-- SEO Principal -->
+    <title>FORTNITE.EZ | Tienda Diaria de Fortnite, Objetos y Rankings</title>
+    <meta name="description" content="Consulta la tienda diaria de Fortnite hoy, objetos, precios en pavos (V-Bucks), cosméticos y rankings en tiempo real con FORTNITE.EZ por Carlis343.">
+    <meta name="keywords" content="fortnite.ez, tienda fortnite hoy, tienda diaria fortnite, fortnite shop ez, objetos fortnite, rankings fortnite, carlis343">
     <meta name="author" content="Carlis343">
     <meta name="robots" content="index, follow">
 
-    <!-- Open Graph (Redes Sociales / WhatsApp / Discord / Twitter) -->
-    <meta property="og:title" content="FORTNITE.EZ">
-    <meta property="og:description" content="Descubre la tienda diaria de Fortnite con filtros avanzados, cosméticos y rankings actualizados.">
-    <meta property="og:url" content="https://fortnite-ez.netlify.app/">
+    <!-- URL Canónica (Cambia la dirección si usas otro nombre de repositorio o dominio) -->
+    <link rel="canonical" href="https://carlis343.github.io/Fortnite/">
+
+    <!-- Open Graph (Redes Sociales, WhatsApp, Discord) -->
+    <meta property="og:site_name" content="FORTNITE.EZ">
+    <meta property="og:title" content="FORTNITE.EZ | Tienda Diaria de Fortnite y Rankings">
+    <meta property="og:description" content="Descubre la tienda diaria de Fortnite con filtros avanzados, cosméticos y rankings actualizados en tiempo real.">
+    <meta property="og:url" content="https://carlis343.github.io/Fortnite/">
     <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_ES">
     <meta property="og:image" content="https://fortnite-api.com/images/cosmetics/br/emoji_tomatohead/smallicon.png">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="FORTNITE.EZ | Tienda Diaria de Fortnite">
+    <meta name="twitter:description" content="Consulta la tienda diaria de Fortnite, precios de pavos y rankings en tiempo real.">
+    <meta name="twitter:image" content="https://fortnite-api.com/images/cosmetics/br/emoji_tomatohead/smallicon.png">
+
+    <!-- Datos Estructurados Schema.org para Google -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "FORTNITE.EZ",
+      "url": "https://carlis343.github.io/Fortnite/",
+      "author": {
+        "@type": "Person",
+        "name": "Carlis343"
+      },
+      "description": "Consulta la tienda diaria de Fortnite, objetos, precios, cosméticos y rankings en tiempo real."
+    }
+    </script>
 
     <!-- Ícono de la pestaña del navegador (Favicon) -->
     <link id="favicon" rel="icon" type="image/png" href="https://fortnite-api.com/images/cosmetics/br/emoji_tomatohead/smallicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --bg-color: #0b0f17;
@@ -33,7 +65,6 @@
 
         * { box-sizing: border-box; }
 
-        /* Mantiene la ventana ajustada al 100% sin scroll externo */
         html, body {
             height: 100vh;
             margin: 0;
@@ -48,7 +79,6 @@
             flex-direction: column;
         }
 
-        /* Navbar superior */
         header {
             background-color: var(--header-bg);
             border-bottom: 2px solid #2d3748;
@@ -118,7 +148,6 @@
             color: var(--accent-red);
         }
 
-        /* Contenedor adaptativo */
         #content-container {
             flex: 1;
             width: 100%;
@@ -138,24 +167,22 @@
     <header>
         <div class="navbar-inner">
             <a href="#" class="nav-logo">
-                <img id="logo-img" src="https://fortnite-api.com/images/cosmetics/br/emoji_tomatohead/smallicon.png" alt="Tomatohead Emoji" class="logo-icon">
+                <img id="logo-img" src="https://fortnite-api.com/images/cosmetics/br/emoji_tomatohead/smallicon.png" alt="Icono Tomatohead Fortnite" class="logo-icon">
                 <span>FORTNITE<span class="logo-highlight">.EZ</span></span>
             </a>
             <nav class="nav-menu">
                 <button id="btn-shop" class="nav-btn active">tienda</button>
                 <button id="btn-rankings" class="nav-btn">rankings</button>
-                <button id="btn-calculator" class="nav-btn">calculadoras</button>
+                <button id="btn-calculator" class="nav-btn">calculadora</button>
             </nav>
         </div>
     </header>
 
     <main id="content-container">
-        <!-- Inicia cargando la tienda desde la carpeta data/ -->
         <iframe id="main-iframe" src="data/shop.ez.html" title="Tienda Fortnite"></iframe>
     </main>
 
     <script>
-        // Búsqueda específica del emoticono en la API
         async function fetchTomatoheadEmoji() {
             try {
                 const response = await fetch('https://fortnite-api.com/v2/cosmetics/br/search?name=Tomatohead&type=emoji');
@@ -178,7 +205,6 @@
         const btnCalculator = document.getElementById('btn-calculator');
         const iframe = document.getElementById('main-iframe');
 
-        // Evento al pulsar "Tienda"
         btnShop.addEventListener('click', () => {
             btnShop.classList.add('active');
             btnRankings.classList.remove('active');
@@ -188,24 +214,22 @@
             iframe.src = 'data/shop.ez.html';
         });
 
-        // Evento al pulsar "Rankings"
         btnRankings.addEventListener('click', () => {
             btnRankings.classList.add('active');
             btnShop.classList.remove('active');
             btnCalculator.classList.remove('active');
             
-            iframe.style.display = 'block';
-            iframe.src = 'data/rankings.ez.html';
+            iframe.style.display = 'none';
+            iframe.src = 'about:blank';
         });
 
-        // Evento al pulsar "Calculadora"
         btnCalculator.addEventListener('click', () => {
             btnCalculator.classList.add('active');
             btnShop.classList.remove('active');
             btnRankings.classList.remove('active');
             
-            iframe.style.display = 'block';
-            iframe.src = 'data/calculator.ez.html';
+            iframe.style.display = 'none';
+            iframe.src = 'about:blank';
         });
     </script>
 
