@@ -593,6 +593,21 @@
             border-color: var(--accent);
         }
 
+        #collabFilterBtn {
+            font-family: 'Inter', sans-serif;
+        }
+
+        #collabFilterBtn.collab-active {
+            border-color: var(--accent);
+            background-color: rgba(255, 59, 59, 0.12);
+            color: var(--text-white);
+        }
+
+        #collabFilterBtn.collab-loading {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
         .dropdown-menu-content {
             display: none;
             position: absolute;
@@ -1135,6 +1150,11 @@
                         </div>
                     </div>
 
+                    <!-- Toggle Filtro de Colaboraciones (verificado contra la wiki oficial, ya que la API no incluye este dato) -->
+                    <button type="button" class="dropdown-toggle-btn" id="collabFilterBtn" title="La API de fortnite-api.com no indica si un cosmético es una colaboración. Este filtro lo comprueba consultando la categoría 'Collaboration Cosmetics' de la wiki oficial (fortnite.weirdgloop.org).">
+                        <span id="collabFilterLabel">Colabs: Todos</span>
+                    </button>
+
                     <!-- Lupa de columnas en la barra de abajo -->
                     <div class="col-controls" style="margin-left: auto;">
                         <span style="font-size: 0.8rem; color: var(--text-white); font-weight: 600;">Cols:</span>
@@ -1264,6 +1284,9 @@
             var introClearBtn = document.getElementById('introClearBtn');
             var introOptionsList = document.getElementById('introOptionsList');
 
+            var collabFilterBtn = document.getElementById('collabFilterBtn');
+            var collabFilterLabel = document.getElementById('collabFilterLabel');
+
             var currentTierList = null; 
             var placedIds = {}; 
 
@@ -1278,6 +1301,107 @@
             var selectedIntros = {};
 
             var poolColumns = 8;
+
+            // ====== Filtro de Colaboraciones (dato verificado contra la wiki oficial) ======
+            // La API de fortnite-api.com no expone si un cosmético pertenece a una
+            // colaboración con terceros, así que ese dato se obtiene consultando la
+            // categoría "Collaboration Cosmetics" de la wiki oficial
+            // (fortnite.weirdgloop.org), que agrupa todas las páginas de cosméticos
+            // de colaboración. Se descarga una única vez (paginando con cmcontinue)
+            // y se guarda en un Set de nombres en minúsculas para comparar rápido.
+            var collabState = 'all'; // 'all' | 'only' | 'none'
+            var collabNamesSet = null;
+            var collabLoading = false;
+            var COLLAB_WIKI_API = 'https://fortnite.weirdgloop.org/api.php';
+            var COLLAB_CATEGORY = 'Category:Collaboration Cosmetics';
+
+            function fetchCollabNames() {
+                if (collabNamesSet) return Promise.resolve(collabNamesSet);
+
+                var names = new Set();
+
+                function fetchPage(cmcontinue) {
+                    var params = new URLSearchParams({
+                        action: 'query',
+                        list: 'categorymembers',
+                        cmtitle: COLLAB_CATEGORY,
+                        cmnamespace: '0',
+                        cmlimit: '500',
+                        format: 'json',
+                        origin: '*'
+                    });
+                    if (cmcontinue) params.set('cmcontinue', cmcontinue);
+
+                    return fetch(COLLAB_WIKI_API + '?' + params.toString())
+                        .then(function (res) {
+                            if (!res.ok) throw new Error('La wiki no respondió correctamente');
+                            return res.json();
+                        })
+                        .then(function (json) {
+                            var members = (json.query && json.query.categorymembers) || [];
+                            members.forEach(function (p) {
+                                if (p && p.title) names.add(p.title.trim().toLowerCase());
+                            });
+                            var cont = json.continue && json.continue.cmcontinue;
+                            if (cont) return fetchPage(cont);
+                            return names;
+                        });
+                }
+
+                return fetchPage(null).then(function (result) {
+                    collabNamesSet = result;
+                    return collabNamesSet;
+                });
+            }
+
+            function isCollabCosmetic(c) {
+                if (!collabNamesSet) return false;
+                return collabNamesSet.has(c.name.trim().toLowerCase());
+            }
+
+            var COLLAB_LABELS = {
+                all: 'Colabs: Todos',
+                only: 'Colabs: Solo colabs',
+                none: 'Colabs: Sin colabs'
+            };
+
+            function updateCollabButtonUI() {
+                collabFilterLabel.textContent = COLLAB_LABELS[collabState];
+                collabFilterBtn.classList.toggle('collab-active', collabState !== 'all');
+            }
+
+            collabFilterBtn.addEventListener('click', function () {
+                if (collabLoading) return;
+
+                var order = ['all', 'only', 'none'];
+                var nextState = order[(order.indexOf(collabState) + 1) % order.length];
+
+                if (nextState !== 'all' && !collabNamesSet) {
+                    collabLoading = true;
+                    collabFilterBtn.classList.add('collab-loading');
+                    collabFilterLabel.textContent = 'Consultando wiki...';
+
+                    fetchCollabNames()
+                        .then(function () {
+                            collabLoading = false;
+                            collabFilterBtn.classList.remove('collab-loading');
+                            collabState = nextState;
+                            updateCollabButtonUI();
+                            applyPoolFilters();
+                        })
+                        .catch(function (err) {
+                            console.error('Error consultando la wiki de colaboraciones:', err);
+                            collabLoading = false;
+                            collabFilterBtn.classList.remove('collab-loading');
+                            updateCollabButtonUI();
+                            alert('No se ha podido consultar la wiki oficial (fortnite.weirdgloop.org) para comprobar las colaboraciones. Puede ser un problema temporal de conexión; inténtalo de nuevo en unos segundos.');
+                        });
+                } else {
+                    collabState = nextState;
+                    updateCollabButtonUI();
+                    applyPoolFilters();
+                }
+            });
 
             // Control de menús desplegables (Toggle y cierre al hacer clic fuera)
             typeDropdownBtn.addEventListener('click', function(e) {
@@ -1322,6 +1446,25 @@
                     span.textContent = poolColumns;
                 });
                 document.documentElement.style.setProperty('--pool-columns', poolColumns);
+            }
+
+            // Abre en una pestaña nueva la página del cosmético en la wiki oficial
+            // (fortnite.weirdgloop.org). No siempre se puede adivinar la URL exacta:
+            // cuando el nombre coincide con el de otra página, la wiki la desambigua
+            // añadiendo el tipo entre paréntesis (p.ej. /w/Rox_(Spray)), y no hay
+            // forma fiable de saber de antemano si eso hace falta. En vez de intentar
+            // resolverlo con una llamada a la API (asíncrona, y sujeta a que el
+            // navegador bloquee o deje en blanco la pestaña mientras se espera la
+            // respuesta), se navega directamente al buscador interno de la wiki:
+            // si existe una página con ese título exacto, MediaWiki lleva directo a
+            // ella; si no, muestra los resultados de búsqueda, donde suele aparecer
+            // la versión desambiguada en vez de una página vacía.
+            function openInFortniteGG(cosmetic) {
+                if (!cosmetic || !cosmetic.name) return;
+                var name = cosmetic.name.trim();
+                var url = 'https://fortnite.weirdgloop.org/index.php?title=Special:Search&search='
+                    + encodeURIComponent(name) + '&go=Go';
+                window.open(url, '_blank', 'noopener');
             }
 
             function getDragAfterElement(container, x, y) {
@@ -1535,7 +1678,10 @@
                     var matchesTerm = !term || c.name.toLowerCase().indexOf(term) !== -1;
                     var matchesType = !hasTypeSelected || !!selectedTypes[c.type];
                     var matchesIntro = !hasIntroSelected || !!selectedIntros[c.intro];
-                    return matchesTerm && matchesType && matchesIntro;
+                    var matchesCollab = true;
+                    if (collabState === 'only') matchesCollab = isCollabCosmetic(c);
+                    else if (collabState === 'none') matchesCollab = !isCollabCosmetic(c);
+                    return matchesTerm && matchesType && matchesIntro && matchesCollab;
                 });
 
                 poolRenderedCount = 0;
@@ -1592,6 +1738,12 @@
                     if (activeRow && !placedIds[cosmetic.id]) {
                         placeItemInRow(activeRow, cosmetic.id);
                     }
+                });
+
+                el.addEventListener('dblclick', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openInFortniteGG(cosmetic);
                 });
 
                 return el;
@@ -1745,6 +1897,12 @@
                     tierListBoard.querySelectorAll('.tier-row-drop').forEach(function (d) {
                         d.classList.remove('drag-over');
                     });
+                });
+
+                item.addEventListener('dblclick', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openInFortniteGG(cosmetic);
                 });
 
                 item.appendChild(img);
