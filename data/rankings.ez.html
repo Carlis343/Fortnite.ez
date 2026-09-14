@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página Vacía</title>
+    <title>Fortnite Tier List y Torneos</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- Librería html2canvas para la exportación a PNG -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -593,17 +593,13 @@
             border-color: var(--accent);
         }
 
-        #collabFilterBtn {
-            font-family: 'Inter', sans-serif;
-        }
-
-        #collabFilterBtn.collab-active {
+        .dropdown-toggle-btn.collab-active {
             border-color: var(--accent);
             background-color: rgba(255, 59, 59, 0.12);
             color: var(--text-white);
         }
 
-        #collabFilterBtn.collab-loading {
+        .dropdown-toggle-btn.collab-loading {
             opacity: 0.6;
             cursor: wait;
         }
@@ -677,7 +673,8 @@
             background-color: var(--card-hover);
         }
 
-        .dropdown-option input[type="checkbox"] {
+        .dropdown-option input[type="checkbox"],
+        .dropdown-option input[type="radio"] {
             accent-color: var(--accent);
             cursor: pointer;
         }
@@ -1097,6 +1094,10 @@
         <div class="tierlist-screen" id="tierListScreen">
             <!-- Botones Flotantes Fixed a la derecha -->
             <div class="fixed-actions-container">
+                <button type="button" class="floating-action-btn" id="btnAjustesTier">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    Ajustes
+                </button>
                 <button type="button" class="floating-action-btn" id="btnExportBin">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     Exportar Tier List
@@ -1150,10 +1151,18 @@
                         </div>
                     </div>
 
-                    <!-- Toggle Filtro de Colaboraciones (verificado contra la wiki oficial, ya que la API no incluye este dato) -->
-                    <button type="button" class="dropdown-toggle-btn" id="collabFilterBtn" title="La API de fortnite-api.com no indica si un cosmético es una colaboración. Este filtro lo comprueba consultando la categoría 'Collaboration Cosmetics' de la wiki oficial (fortnite.weirdgloop.org).">
-                        <span id="collabFilterLabel">Colabs: Todos</span>
-                    </button>
+                    <!-- Toggle Filtro de Colaboraciones (Menú Desplegable) -->
+                    <div class="dropdown-toggle-container" id="collabDropdownContainer">
+                        <div class="dropdown-toggle-btn" id="collabDropdownBtn" title="Filtra por cosméticos que sean colaboraciones según la wiki oficial.">
+                            <span id="collabFilterLabel">Colabs: Todos</span>
+                            <span>▼</span>
+                        </div>
+                        <div class="dropdown-menu-content" id="collabDropdownContent">
+                            <input type="text" class="dropdown-search-input" id="collabSearchInput" placeholder="Filtrar colaboraciones...">
+                            <div class="dropdown-clear-btn" id="collabClearBtn">Limpiar filtros</div>
+                            <div id="collabOptionsList"></div>
+                        </div>
+                    </div>
 
                     <!-- Lupa de columnas en la barra de abajo -->
                     <div class="col-controls" style="margin-left: auto;">
@@ -1201,6 +1210,32 @@
         </div>
     </div>
 
+    <!-- Modal: Editar Tier List (Ajustes) -->
+    <div class="overlay" id="editTierListOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Editar Tier List</h2>
+                <button type="button" class="modal-close" data-close="editTierListOverlay">&times;</button>
+            </div>
+            <div class="modal-body">
+                <label class="field-label" for="editTierListName">Nombre de la Tier List</label>
+                <input type="text" id="editTierListName" class="text-input" placeholder="Ej: Mejores armas de Fortnite">
+
+                <div class="sections-block">
+                    <div class="sections-header">
+                        <label class="field-label" style="margin-bottom:0;">Secciones</label>
+                        <button type="button" class="add-section-btn" id="btnAddEditSection">+ Añadir sección</button>
+                    </div>
+                    <div id="editSectionsContainer"></div>
+                    <p class="empty-sections-msg" id="editEmptySectionsMsg">Todavía no hay secciones. Añade una para empezar.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="create-btn" id="btnGuardarAjustesTier">Guardar cambios</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal: Crear Top -->
     <div class="overlay" id="topOverlay">
         <div class="modal">
@@ -1237,12 +1272,19 @@
 
     <footer>
         <p>Datos proporcionados por <a href="https://fortnite-api.com/" target="_blank" rel="noopener noreferrer">Fortnite-API.com</a> | Creado por <strong class="creator">Carlis343</strong></p>
-        <p class="copyright">© Fortnite y sus respectivos logotipos son marcas comerciales o marcas registradas de Epic Games, Inc. en EE. UU. y en otros lugares. Este sitio no está afiliado ni respaldado por Epic Games.</p>
+        <p class="copyright">© Fortnite y sus respectivos logotipos son marcas comerciales o marcas registrada de Epic Games, Inc. en EE. UU. y en otros lugares. Este sitio no está afiliado ni respaldado por Epic Games.</p>
     </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var tierListOverlay = document.getElementById('tierListOverlay');
+            var editTierListOverlay = document.getElementById('editTierListOverlay');
+            var editTierListName = document.getElementById('editTierListName');
+            var editSectionsContainer = document.getElementById('editSectionsContainer');
+            var editEmptySectionsMsg = document.getElementById('editEmptySectionsMsg');
+            var btnAjustesTier = document.getElementById('btnAjustesTier');
+            var btnAddEditSection = document.getElementById('btnAddEditSection');
+            var btnGuardarAjustesTier = document.getElementById('btnGuardarAjustesTier');
             var topOverlay = document.getElementById('topOverlay');
             var torneoOverlay = document.getElementById('torneoOverlay');
             var mainMenu = document.getElementById('mainMenu');
@@ -1284,7 +1326,11 @@
             var introClearBtn = document.getElementById('introClearBtn');
             var introOptionsList = document.getElementById('introOptionsList');
 
-            var collabFilterBtn = document.getElementById('collabFilterBtn');
+            var collabDropdownBtn = document.getElementById('collabDropdownBtn');
+            var collabDropdownContent = document.getElementById('collabDropdownContent');
+            var collabSearchInput = document.getElementById('collabSearchInput');
+            var collabClearBtn = document.getElementById('collabClearBtn');
+            var collabOptionsList = document.getElementById('collabOptionsList');
             var collabFilterLabel = document.getElementById('collabFilterLabel');
 
             var currentTierList = null; 
@@ -1299,16 +1345,11 @@
 
             var selectedTypes = {};
             var selectedIntros = {};
+            var selectedCollabs = {};
 
             var poolColumns = 8;
 
-            // ====== Filtro de Colaboraciones (dato verificado contra la wiki oficial) ======
-            // La API de fortnite-api.com no expone si un cosmético pertenece a una
-            // colaboración con terceros, así que ese dato se obtiene consultando la
-            // categoría "Collaboration Cosmetics" de la wiki oficial
-            // (fortnite.weirdgloop.org), que agrupa todas las páginas de cosméticos
-            // de colaboración. Se descarga una única vez (paginando con cmcontinue)
-            // y se guarda en un Set de nombres en minúsculas para comparar rápido.
+            // ====== Filtro de Colaboraciones ======
             var collabState = 'all'; // 'all' | 'only' | 'none'
             var collabNamesSet = null;
             var collabLoading = false;
@@ -1359,72 +1400,193 @@
                 return collabNamesSet.has(c.name.trim().toLowerCase());
             }
 
-            var COLLAB_LABELS = {
-                all: 'Colabs: Todos',
-                only: 'Colabs: Solo colabs',
-                none: 'Colabs: Sin colabs'
-            };
-
             function updateCollabButtonUI() {
-                collabFilterLabel.textContent = COLLAB_LABELS[collabState];
-                collabFilterBtn.classList.toggle('collab-active', collabState !== 'all');
+                var selectedCount = Object.keys(selectedCollabs).length;
+                if (collabState === 'only') {
+                    collabFilterLabel.textContent = 'Colabs: Solo colabs';
+                } else if (collabState === 'none') {
+                    collabFilterLabel.textContent = 'Colabs: Sin colabs';
+                } else if (selectedCount > 0) {
+                    collabFilterLabel.textContent = 'Colabs: ' + selectedCount + ' sel.';
+                } else {
+                    collabFilterLabel.textContent = 'Colabs: Todos';
+                }
+                collabDropdownBtn.classList.toggle('collab-active', collabState !== 'all' || selectedCount > 0);
             }
 
-            collabFilterBtn.addEventListener('click', function () {
-                if (collabLoading) return;
+            function ensureCollabDataLoaded() {
+                if (collabNamesSet) return Promise.resolve(collabNamesSet);
 
-                var order = ['all', 'only', 'none'];
-                var nextState = order[(order.indexOf(collabState) + 1) % order.length];
+                collabLoading = true;
+                collabDropdownBtn.classList.add('collab-loading');
+                collabFilterLabel.textContent = 'Consultando wiki...';
 
-                if (nextState !== 'all' && !collabNamesSet) {
-                    collabLoading = true;
-                    collabFilterBtn.classList.add('collab-loading');
-                    collabFilterLabel.textContent = 'Consultando wiki...';
+                return fetchCollabNames()
+                    .then(function (names) {
+                        collabLoading = false;
+                        collabDropdownBtn.classList.remove('collab-loading');
+                        updateCollabButtonUI();
+                        populateCollabOptions();
+                        return names;
+                    })
+                    .catch(function (err) {
+                        console.error('Error consultando la wiki de colaboraciones:', err);
+                        collabLoading = false;
+                        collabDropdownBtn.classList.remove('collab-loading');
+                        updateCollabButtonUI();
+                        alert('No se ha podido consultar la wiki oficial para comprobar las colaboraciones. Inténtalo de nuevo.');
+                        throw err;
+                    });
+            }
 
-                    fetchCollabNames()
-                        .then(function () {
-                            collabLoading = false;
-                            collabFilterBtn.classList.remove('collab-loading');
-                            collabState = nextState;
+            function populateCollabOptions() {
+                if (!allCosmetics || !collabNamesSet) return;
+                var collabsMap = {};
+                allCosmetics.forEach(function (c) {
+                    if (isCollabCosmetic(c)) {
+                        collabsMap[c.name] = true;
+                    }
+                });
+                renderCollabCheckboxes(Object.keys(collabsMap).sort(), collabSearchInput.value.trim());
+            }
+
+            function renderCollabCheckboxes(collabsArray, filterText = '') {
+                collabOptionsList.innerHTML = '';
+
+                // Opciones base predefinidas
+                var baseOptions = [
+                    { value: 'all', label: 'Mostrar todos' },
+                    { value: 'only', label: 'Solo colaboraciones' },
+                    { value: 'none', label: 'Sin colaboraciones' }
+                ];
+
+                baseOptions.forEach(function (opt) {
+                    var label = document.createElement('label');
+                    label.className = 'dropdown-option';
+                    label.style.borderBottom = '1px dashed #2d3748';
+
+                    var radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = 'collabGlobalState';
+                    radio.value = opt.value;
+                    radio.checked = collabState === opt.value && Object.keys(selectedCollabs).length === 0;
+
+                    radio.addEventListener('change', function () {
+                        if (radio.checked) {
+                            collabState = opt.value;
+                            selectedCollabs = {};
+                            renderCollabCheckboxes(collabsArray, filterText);
                             updateCollabButtonUI();
                             applyPoolFilters();
-                        })
-                        .catch(function (err) {
-                            console.error('Error consultando la wiki de colaboraciones:', err);
-                            collabLoading = false;
-                            collabFilterBtn.classList.remove('collab-loading');
-                            updateCollabButtonUI();
-                            alert('No se ha podido consultar la wiki oficial (fortnite.weirdgloop.org) para comprobar las colaboraciones. Puede ser un problema temporal de conexión; inténtalo de nuevo en unos segundos.');
-                        });
-                } else {
-                    collabState = nextState;
-                    updateCollabButtonUI();
-                    applyPoolFilters();
+                        }
+                    });
+
+                    var span = document.createElement('span');
+                    span.textContent = opt.label;
+                    span.style.fontWeight = '600';
+
+                    label.appendChild(radio);
+                    label.appendChild(span);
+                    collabOptionsList.appendChild(label);
+                });
+
+                var filtered = collabsArray.filter(function (c) {
+                    return c.toLowerCase().indexOf(filterText.toLowerCase()) !== -1;
+                });
+
+                if (filtered.length === 0 && collabsArray.length > 0) {
+                    var emptyDiv = document.createElement('div');
+                    emptyDiv.style.padding = '6px';
+                    emptyDiv.style.fontSize = '0.8rem';
+                    emptyDiv.style.color = 'var(--text)';
+                    emptyDiv.style.fontStyle = 'italic';
+                    emptyDiv.textContent = 'Sin resultados';
+                    collabOptionsList.appendChild(emptyDiv);
+                    return;
                 }
+
+                filtered.forEach(function (collabName) {
+                    var label = document.createElement('label');
+                    label.className = 'dropdown-option';
+
+                    var checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = collabName;
+                    checkbox.checked = !!selectedCollabs[collabName];
+
+                    checkbox.addEventListener('change', function () {
+                        if (checkbox.checked) {
+                            selectedCollabs[collabName] = true;
+                            collabState = 'all';
+                        } else {
+                            delete selectedCollabs[collabName];
+                        }
+                        renderCollabCheckboxes(collabsArray, filterText);
+                        updateCollabButtonUI();
+                        applyPoolFilters();
+                    });
+
+                    var span = document.createElement('span');
+                    span.textContent = collabName;
+
+                    label.appendChild(checkbox);
+                    label.appendChild(span);
+                    collabOptionsList.appendChild(label);
+                });
+            }
+
+            collabDropdownBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (collabLoading) return;
+
+                typeDropdownContent.classList.remove('show');
+                introDropdownContent.classList.remove('show');
+
+                ensureCollabDataLoaded().then(function () {
+                    collabDropdownContent.classList.toggle('show');
+                }).catch(function () {});
             });
 
-            // Control de menús desplegables (Toggle y cierre al hacer clic fuera)
+            collabClearBtn.addEventListener('click', function () {
+                selectedCollabs = {};
+                collabState = 'all';
+                collabSearchInput.value = '';
+                updateCollabButtonUI();
+                populateCollabOptions();
+                applyPoolFilters();
+            });
+
+            collabSearchInput.addEventListener('input', function () {
+                if (!collabNamesSet) return;
+                populateCollabOptions();
+            });
+
+            // Control de menús desplegables
             typeDropdownBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 typeDropdownContent.classList.toggle('show');
                 introDropdownContent.classList.remove('show');
+                collabDropdownContent.classList.remove('show');
             });
 
             introDropdownBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 introDropdownContent.classList.toggle('show');
                 typeDropdownContent.classList.remove('show');
+                collabDropdownContent.classList.remove('show');
             });
 
             document.addEventListener('click', function() {
                 typeDropdownContent.classList.remove('show');
                 introDropdownContent.classList.remove('show');
+                collabDropdownContent.classList.remove('show');
             });
 
             typeDropdownContent.addEventListener('click', function(e) { e.stopPropagation(); });
             introDropdownContent.addEventListener('click', function(e) { e.stopPropagation(); });
+            collabDropdownContent.addEventListener('click', function(e) { e.stopPropagation(); });
 
-            // Manejo de botones de columnas (inferiores)
+            // Manejo de botones de columnas
             document.querySelectorAll('.btnSumarCol').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     poolColumns++;
@@ -1448,17 +1610,6 @@
                 document.documentElement.style.setProperty('--pool-columns', poolColumns);
             }
 
-            // Abre en una pestaña nueva la página del cosmético en la wiki oficial
-            // (fortnite.weirdgloop.org). No siempre se puede adivinar la URL exacta:
-            // cuando el nombre coincide con el de otra página, la wiki la desambigua
-            // añadiendo el tipo entre paréntesis (p.ej. /w/Rox_(Spray)), y no hay
-            // forma fiable de saber de antemano si eso hace falta. En vez de intentar
-            // resolverlo con una llamada a la API (asíncrona, y sujeta a que el
-            // navegador bloquee o deje en blanco la pestaña mientras se espera la
-            // respuesta), se navega directamente al buscador interno de la wiki:
-            // si existe una página con ese título exacto, MediaWiki lleva directo a
-            // ella; si no, muestra los resultados de búsqueda, donde suele aparecer
-            // la versión desambiguada en vez de una página vacía.
             function openInFortniteGG(cosmetic) {
                 if (!cosmetic || !cosmetic.name) return;
                 var name = cosmetic.name.trim();
@@ -1673,14 +1824,22 @@
                 var term = poolSearch.value.trim().toLowerCase();
                 var hasTypeSelected = Object.keys(selectedTypes).length > 0;
                 var hasIntroSelected = Object.keys(selectedIntros).length > 0;
+                var hasCollabSelected = Object.keys(selectedCollabs).length > 0;
 
                 filteredCosmetics = allCosmetics.filter(function (c) {
                     var matchesTerm = !term || c.name.toLowerCase().indexOf(term) !== -1;
                     var matchesType = !hasTypeSelected || !!selectedTypes[c.type];
                     var matchesIntro = !hasIntroSelected || !!selectedIntros[c.intro];
                     var matchesCollab = true;
-                    if (collabState === 'only') matchesCollab = isCollabCosmetic(c);
-                    else if (collabState === 'none') matchesCollab = !isCollabCosmetic(c);
+
+                    if (hasCollabSelected) {
+                        matchesCollab = !!selectedCollabs[c.name];
+                    } else if (collabState === 'only') {
+                        matchesCollab = isCollabCosmetic(c);
+                    } else if (collabState === 'none') {
+                        matchesCollab = !isCollabCosmetic(c);
+                    }
+
                     return matchesTerm && matchesType && matchesIntro && matchesCollab;
                 });
 
@@ -1921,7 +2080,21 @@
             btnClearTier.addEventListener('click', function() {
                 if (!currentTierList) return;
                 if (confirm("¿Estás seguro de que deseas vaciar toda la tier list?")) {
+                    
+                    // 1. Borrar los items de la memoria de la tier list cargada
+                    if (currentTierList.sections) {
+                        currentTierList.sections.forEach(function(section) {
+                            section.items = [];
+                        });
+                    }
+                    
+                    // 2. Limpiar el tablero (esto también reinicia 'placedIds')
                     buildTierListBoard(); 
+                    
+                    // 3. Hacer que todos los cosméticos vuelvan a aparecer en la pool
+                    document.querySelectorAll('.pool-item.used').forEach(function(item) {
+                        item.classList.remove('used');
+                    });
                 }
             });
 
@@ -1951,7 +2124,9 @@
                     filters: {
                         searchTerm: poolSearch.value,
                         selectedTypes: Object.keys(selectedTypes),
-                        selectedIntros: Object.keys(selectedIntros)
+                        selectedIntros: Object.keys(selectedIntros),
+                        selectedCollabs: Object.keys(selectedCollabs),
+                        collabState: collabState
                     },
                     columns: poolColumns
                 };
@@ -2007,6 +2182,15 @@
                                     importedData.filters.selectedIntros.forEach(function(i) { selectedIntros[i] = true; });
                                 }
 
+                                selectedCollabs = {};
+                                if (importedData.filters.selectedCollabs) {
+                                    importedData.filters.selectedCollabs.forEach(function(c) { selectedCollabs[c] = true; });
+                                }
+
+                                if (importedData.filters.collabState) {
+                                    collabState = importedData.filters.collabState;
+                                }
+
                                 var types = {};
                                 var intros = {};
                                 allCosmetics.forEach(function (c) { 
@@ -2015,6 +2199,7 @@
                                 });
                                 renderTypeCheckboxes(Object.keys(types).sort());
                                 renderIntroCheckboxes(Object.keys(intros).sort());
+                                updateCollabButtonUI();
                             }
 
                             buildTierListBoard(importedData.sections);
@@ -2128,16 +2313,16 @@
                 return d > 180 ? 360 - d : d;
             }
 
-            function getExistingHues() {
+            function getExistingHues(container) {
                 var hues = [];
-                sectionsContainer.querySelectorAll('input[type="color"]').forEach(function (input) {
+                (container || sectionsContainer).querySelectorAll('input[type="color"]').forEach(function (input) {
                     hues.push(hexToHue(input.value));
                 });
                 return hues;
             }
 
-            function generateDistinctColor() {
-                var existingHues = getExistingHues();
+            function generateDistinctColor(container) {
+                var existingHues = getExistingHues(container);
                 var n = existingHues.length;
                 var minGap = n === 0 ? 0 : Math.max(25, 300 / (n + 1));
                 var bestHue = Math.random() * 360;
@@ -2163,18 +2348,19 @@
                 return hslToHex(bestHue, s, l);
             }
 
-            function addSectionRow() {
+            function createSectionRow(container, emptyMsgEl, colorValue, nameValue) {
                 var row = document.createElement('div');
                 row.className = 'section-row';
 
                 var colorInput = document.createElement('input');
                 colorInput.type = 'color';
-                colorInput.value = generateDistinctColor();
+                colorInput.value = colorValue;
 
                 var textInput = document.createElement('input');
                 textInput.type = 'text';
                 textInput.className = 'text-input';
                 textInput.placeholder = 'Nombre de la sección';
+                textInput.value = nameValue || '';
 
                 var removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
@@ -2182,29 +2368,150 @@
                 removeBtn.innerHTML = '&times;';
                 removeBtn.addEventListener('click', function () {
                     row.remove();
-                    updateEmptySectionsMsg();
+                    if (emptyMsgEl) emptyMsgEl.style.display = container.children.length === 0 ? 'block' : 'none';
                 });
 
                 row.appendChild(colorInput);
                 row.appendChild(textInput);
                 row.appendChild(removeBtn);
-                sectionsContainer.appendChild(row);
+                container.appendChild(row);
+                if (emptyMsgEl) emptyMsgEl.style.display = 'none';
+                return row;
+            }
+
+            function addSectionRow() {
+                createSectionRow(sectionsContainer, emptySectionsMsg, generateDistinctColor(sectionsContainer), '');
                 updateEmptySectionsMsg();
             }
 
-            function showResultScreen() {
-                mainMenu.style.display = 'none';
-                resultScreen.classList.add('active');
+            function normalizeColorToHex(color, fallbackContainer) {
+                if (!color) return generateDistinctColor(fallbackContainer);
+                if (color.charAt(0) === '#') return color;
+                var match = /^rgb\(\s*(\d+),\s*(\d+),\s*(\d+)\s*\)$/i.exec(color);
+                if (match) {
+                    var toHex = function (n) { return parseInt(n, 10).toString(16).padStart(2, '0'); };
+                    return '#' + toHex(match[1]) + toHex(match[2]) + toHex(match[3]);
+                }
+                return generateDistinctColor(fallbackContainer);
             }
 
-            function goBackToMenu() {
-                resultScreen.classList.remove('active');
-                torneoScreen.classList.remove('active');
-                podiumScreen.classList.remove('active');
-                mainMenu.style.display = 'grid';
-            }
+            // ====== Modal Editar Tier List (Ajustes) ======
+            btnAjustesTier.addEventListener('click', function() {
+                if (!currentTierList) return;
+                editTierListName.value = currentTierList.name || '';
+                editSectionsContainer.innerHTML = '';
 
-            /* ===================== TORNEO (BRACKETS) ===================== */
+                var currentRows = tierListBoard.querySelectorAll('.tier-row');
+                currentRows.forEach(function(row) {
+                    var nameText = row.querySelector('.tier-row-label').textContent;
+                    var bgColor = row.querySelector('.tier-row-label').style.backgroundColor;
+                    var hexColor = normalizeColorToHex(bgColor, editSectionsContainer);
+                    createSectionRow(editSectionsContainer, editEmptySectionsMsg, hexColor, nameText);
+                });
+
+                editEmptySectionsMsg.style.display = editSectionsContainer.children.length === 0 ? 'block' : 'none';
+                openModal(editTierListOverlay);
+            });
+
+            btnAddEditSection.addEventListener('click', function() {
+                createSectionRow(editSectionsContainer, editEmptySectionsMsg, generateDistinctColor(editSectionsContainer), '');
+                editEmptySectionsMsg.style.display = editSectionsContainer.children.length === 0 ? 'block' : 'none';
+            });
+
+            btnGuardarAjustesTier.addEventListener('click', function() {
+                var newName = editTierListName.value.trim() || 'Tier List Sin Título';
+                var rows = editSectionsContainer.querySelectorAll('.section-row');
+                
+                var newSections = [];
+                rows.forEach(function(r) {
+                    var color = r.querySelector('input[type="color"]').value;
+                    var name = r.querySelector('input[type="text"]').value.trim();
+                    if (name) {
+                        newSections.push({ name: name, color: color, items: [] });
+                    }
+                });
+
+                if (newSections.length === 0) {
+                    alert('Debes añadir al menos una sección con nombre.');
+                    return;
+                }
+
+                currentTierList.name = newName;
+                tierListTitleDisplay.textContent = newName;
+
+                // Reconstruir manteniendo items si el índice existe
+                var oldSectionsData = [];
+                tierListBoard.querySelectorAll('.tier-row').forEach(function(row) {
+                    var itemIds = [];
+                    row.querySelectorAll('.tier-item').forEach(function(it) {
+                        itemIds.push(it.dataset.id);
+                    });
+                    oldSectionsData.push(itemIds);
+                });
+
+                newSections.forEach(function(sec, idx) {
+                    if (oldSectionsData[idx]) {
+                        sec.items = oldSectionsData[idx];
+                    }
+                });
+
+                currentTierList.sections = newSections;
+                buildTierListBoard(newSections);
+                closeModal(editTierListOverlay);
+            });
+
+            // Handlers de botones del Menú Principal
+            document.getElementById('btnCrearTierList').addEventListener('click', function () {
+                document.getElementById('tierListName').value = '';
+                sectionsContainer.innerHTML = '';
+                addSectionRow();
+                openModal(tierListOverlay);
+            });
+
+            document.getElementById('btnAddSection').addEventListener('click', addSectionRow);
+
+            document.getElementById('btnCrearTierListConfirm').addEventListener('click', function () {
+                var name = document.getElementById('tierListName').value.trim() || 'Tier List Sin Título';
+                var rows = sectionsContainer.querySelectorAll('.section-row');
+                var sections = [];
+
+                rows.forEach(function (r) {
+                    var color = r.querySelector('input[type="color"]').value;
+                    var secName = r.querySelector('input[type="text"]').value.trim();
+                    if (secName) {
+                        sections.push({ name: secName, color: color, items: [] });
+                    }
+                });
+
+                if (sections.length === 0) {
+                    alert('Debes añadir al menos una sección con nombre.');
+                    return;
+                }
+
+                closeModal(tierListOverlay);
+                openTierListScreen(name, sections);
+            });
+
+            document.getElementById('btnCrearTop').addEventListener('click', function () {
+                document.getElementById('topName').value = '';
+                openModal(topOverlay);
+            });
+
+            document.getElementById('btnCrearTopConfirm').addEventListener('click', function () {
+                var name = document.getElementById('topName').value.trim() || 'Top';
+                closeModal(topOverlay);
+                
+                var topSections = [
+                    { name: '1', color: '#ffd700', items: [] },
+                    { name: '2', color: '#c0c0c0', items: [] },
+                    { name: '3', color: '#cd7f32', items: [] },
+                    { name: '4-5', color: '#38bdf8', items: [] },
+                    { name: '6-10', color: '#a855f7', items: [] }
+                ];
+                openTierListScreen(name, topSections);
+            });
+
+            // ====== LÓGICA DE TORNEOS ======
             var torneoScreen = document.getElementById('torneoScreen');
             var torneoScreenTitle = document.getElementById('torneoScreenTitle');
             var torneoScreenProgress = document.getElementById('torneoScreenProgress');
@@ -2212,388 +2519,162 @@
             var btnVolverTorneo = document.getElementById('btnVolverTorneo');
 
             var podiumScreen = document.getElementById('podiumScreen');
-            var podiumExportContainer = document.getElementById('podiumExportContainer');
             var podiumTitle = document.getElementById('podiumTitle');
             var podiumTop3 = document.getElementById('podiumTop3');
             var podiumRest = document.getElementById('podiumRest');
             var btnVolverPodio = document.getElementById('btnVolverPodio');
             var btnFotoFinal = document.getElementById('btnFotoFinal');
+            var podiumExportContainer = document.getElementById('podiumExportContainer');
 
-            var torneoApiCache = {}; // cache por tipo de la API: { sidekick: [...], outfit: [...] }
-
-            var TORNEO_JUNK_NAME_PATTERNS = [/recruit/i, /\btbd\b/i, /\bnpc\b/i];
-
-            function isRealReleasedCosmetic(item) {
-                var name = (item.name || '').trim();
-                if (!name) return false;
-                if (name.toLowerCase() === 'random') return false;
-                if (TORNEO_JUNK_NAME_PATTERNS.some(function (re) { return re.test(name); })) return false;
-                
-                // NUEVO FILTRO: Excluir si el nombre contiene "SET_" (sin distinción de mayúsculas/minúsculas) o un "_"
-                if (/set_/i.test(name) || name.indexOf('_') !== -1) return false;
-
-                // Sin temporada/capítulo de introducción = probablemente sin lanzar o de prueba interna
-                if (!item.introduction) return false;
-                return true;
-            }
-
-            function loadCosmeticsByApiType(apiType) {
-                if (torneoApiCache[apiType]) {
-                    return Promise.resolve(torneoApiCache[apiType]);
-                }
-                return fetch('https://fortnite-api.com/v2/cosmetics/br/search/all?type=' + apiType)
-                    .then(function (res) {
-                        if (!res.ok) throw new Error('Respuesta no válida de la API');
-                        return res.json();
-                    })
-                    .then(function (json) {
-                        var arr = (json && json.data) || [];
-                        var list = arr
-                            .filter(isRealReleasedCosmetic)
-                            .map(function (item) {
-                                var img = item.images && (item.images.icon || item.images.smallIcon || item.images.featured);
-                                return {
-                                    id: item.id,
-                                    name: item.name || 'Sin nombre',
-                                    image: img || null
-                                };
-                            })
-                            .filter(function (c) { return c.id && c.image; });
-                        torneoApiCache[apiType] = list;
-                        return list;
-                    });
-            }
-
-            var TORNEO_CONFIG = {
-                acompanantes: { apiType: 'sidekick', title: 'Torneo de Acompañantes' },
-                skins: { apiType: 'outfit', title: 'Torneo de Skins' }
-            };
-
-            var torneoBatchSize = 10;                          // tamaño de tanda configurado (rondas por encima del umbral)
-            var TORNEO_HEAD_TO_HEAD_THRESHOLD = 10;             // a partir de esta cantidad (o menos), bracket 1 vs 1
-
-            var torneoRoundItems = [];      // pool que entra a jugarse en la ronda actual
-            var torneoRoundBatches = [];    // tandas/enfrentamientos precalculados de la ronda actual
+            var torneoPool = [];
+            var torneoCurrentRound = [];
+            var torneoNextRound = [];
             var torneoBatchIndex = 0;
-            var torneoRoundWinners = [];
+            var torneoMaxBatchSize = 10;
             var torneoRoundNumber = 1;
-            var torneoEliminatedByRound = {}; // { roundNumber: [items eliminados en esa ronda] }
 
-            var torneoThirdPlaceContenders = null; // los 2 perdedores de semifinales, en espera de su partido
-            var torneoChampion = null;
-            var torneoRunnerUp = null;
-            var torneoThirdPlace = null;
-            var torneoFourthPlace = null;
-            var torneoSpecialMatchCallback = null; // usado para el partido por el 3er puesto
+            document.getElementById('btnTorneoSkins').addEventListener('click', function () {
+                currentTorneoType = 'Outfit';
+                torneoModalTitle.textContent = 'Configurar Torneo de Skins';
+                openModal(torneoOverlay);
+            });
 
-            function shuffleArray(arr) {
-                for (var i = arr.length - 1; i > 0; i--) {
-                    var j = Math.floor(Math.random() * (i + 1));
-                    var tmp = arr[i];
-                    arr[i] = arr[j];
-                    arr[j] = tmp;
-                }
-                return arr;
-            }
+            document.getElementById('btnTorneoAcompanantes').addEventListener('click', function () {
+                currentTorneoType = 'Backpack';
+                torneoModalTitle.textContent = 'Configurar Torneo de Acompañantes';
+                openModal(torneoOverlay);
+            });
 
-            function chunkArray(arr, size) {
-                var out = [];
-                for (var i = 0; i < arr.length; i += size) {
-                    out.push(arr.slice(i, i + size));
-                }
-                return out;
-            }
+            document.getElementById('btnCrearTorneoConfirm').addEventListener('click', function () {
+                var maxVal = parseInt(torneoMaxRoundSize.value, 10);
+                if (isNaN(maxVal) || maxVal < 1) maxVal = 10;
+                torneoMaxBatchSize = maxVal;
 
-            function nextPowerOfTwo(n) {
-                var p = 1;
-                while (p < n) { p *= 2; }
-                return p;
-            }
+                closeModal(torneoOverlay);
 
-            function isKnockoutZone(n) {
-                return n <= TORNEO_HEAD_TO_HEAD_THRESHOLD;
-            }
+                loadCosmetics().then(function () {
+                    var matches = allCosmetics.filter(function (c) {
+                        if (currentTorneoType === 'Outfit') {
+                            return c.type.toLowerCase().indexOf('outfit') !== -1 || c.type.toLowerCase().indexOf('traje') !== -1;
+                        } else if (currentTorneoType === 'Backpack') {
+                            return c.type.toLowerCase().indexOf('backpack') !== -1 || c.type.toLowerCase().indexOf('mochila') !== -1 || c.type.toLowerCase().indexOf('acompañante') !== -1;
+                        }
+                        return false;
+                    });
 
-            // Construye los enfrentamientos de una ronda. En zona de bracket (<=10),
-            // solo se reparten "byes" (pases directos) en la primera ronda de esa zona,
-            // lo justo para que a partir de ahí todo sea limpio: cuartos, semis, final.
-            function buildRoundBatches(poolItems) {
-                if (!isKnockoutZone(poolItems.length)) {
-                    return chunkArray(poolItems, torneoBatchSize);
-                }
-
-                var bracketSize = nextPowerOfTwo(poolItems.length);
-                var byes = bracketSize - poolItems.length;
-                var byeItems = poolItems.slice(0, byes);
-                var matchItems = poolItems.slice(byes);
-
-                var batches = chunkArray(matchItems, 2);
-                byeItems.forEach(function (b) { batches.push([b]); });
-                return batches;
-            }
-
-            function trackEliminated(round, items) {
-                if (!items.length) return;
-                if (!torneoEliminatedByRound[round]) {
-                    torneoEliminatedByRound[round] = [];
-                }
-                torneoEliminatedByRound[round] = torneoEliminatedByRound[round].concat(items);
-            }
-
-            function startTorneo(type, maxRound) {
-                var config = TORNEO_CONFIG[type];
-                if (!config) {
-                    alert('Tipo de torneo no reconocido.');
-                    return;
-                }
-
-                loadCosmeticsByApiType(config.apiType).then(function (pool) {
-                    if (pool.length < 2) {
-                        alert('No hay suficientes cosméticos de este tipo cargados para el torneo.');
+                    if (matches.length < 2) {
+                        alert('No hay suficientes elementos de este tipo para realizar un torneo.');
                         return;
                     }
 
-                    torneoBatchSize = Math.max(2, maxRound);
+                    // Mezclar aleatoriamente
+                    for (var i = matches.length - 1; i > 0; i--) {
+                        var j = Math.floor(Math.random() * (i + 1));
+                        var temp = matches[i];
+                        matches[i] = matches[j];
+                        matches[j] = temp;
+                    }
+
+                    torneoPool = matches;
+                    torneoCurrentRound = torneoPool.slice();
+                    torneoNextRound = [];
                     torneoRoundNumber = 1;
-                    torneoEliminatedByRound = {};
-                    torneoThirdPlaceContenders = null;
-                    torneoChampion = null;
-                    torneoRunnerUp = null;
-                    torneoThirdPlace = null;
-                    torneoFourthPlace = null;
-
-                    torneoRoundItems = shuffleArray(pool.slice());
-
-                    torneoScreenTitle.textContent = config.title;
 
                     mainMenu.style.display = 'none';
                     torneoScreen.classList.add('active');
-                    startRound();
-                }).catch(function (err) {
-                    console.error(err);
-                    alert('No se pudieron cargar los cosméticos. Comprueba tu conexión e inténtalo de nuevo.');
-                });
-            }
+                    torneoScreenTitle.textContent = currentTorneoType === 'Outfit' ? 'Torneo de Skins' : 'Torneo de Acompañantes';
 
-            function startRound() {
-                torneoRoundBatches = buildRoundBatches(torneoRoundItems);
+                    startTorneoRound();
+                });
+            });
+
+            function startTorneoRound() {
                 torneoBatchIndex = 0;
-                torneoRoundWinners = [];
                 renderTorneoBatch();
             }
 
             function renderTorneoBatch() {
-                if (torneoBatchIndex >= torneoRoundBatches.length) {
-                    finishRound();
+                torneoBatchGrid.innerHTML = '';
+
+                var remaining = torneoCurrentRound.length - torneoBatchIndex;
+                if (remaining <= 0) {
+                    if (torneoNextRound.length === 1) {
+                        showTorneoPodium();
+                        return;
+                    }
+                    torneoCurrentRound = torneoNextRound.slice();
+                    torneoNextRound = [];
+                    torneoRoundNumber++;
+                    startTorneoRound();
                     return;
                 }
 
-                var batch = torneoRoundBatches[torneoBatchIndex];
-                var totalBatches = torneoRoundBatches.length;
-                var currentBatchNumber = torneoBatchIndex + 1;
-
-                var roundLabel = roundLabelFor(torneoRoundItems.length, batch.length, totalBatches);
-
-                torneoScreenProgress.textContent =
-                    roundLabel + ' — Enfrentamiento ' + currentBatchNumber + ' de ' + totalBatches +
-                    ' (' + torneoRoundItems.length + ' en juego)';
-
-                renderBatchCards(batch, function (item) {
-                    selectTorneoWinner(item, batch);
-                });
-            }
-
-            function roundLabelFor(poolLength, batchLength, totalBatches) {
-                if (!isKnockoutZone(poolLength)) {
-                    return 'Ronda ' + torneoRoundNumber;
+                var countToPick = Math.min(remaining, torneoMaxBatchSize);
+                // Si quedarían solo 1 elementos colgados para el siguiente lote de esta ronda, los incluimos aquí
+                if (remaining - countToPick === 1) {
+                    countToPick = remaining;
                 }
-                if (poolLength === 2) return 'FINAL';
-                if (poolLength === 4) return 'Semifinal';
-                if (poolLength === 8) return 'Cuartos de final';
-                if (batchLength === 1) return 'Ronda ' + torneoRoundNumber + ' (pase directo)';
-                return 'Ronda ' + torneoRoundNumber + ' — Top ' + poolLength;
-            }
 
-            function renderBatchCards(batch, onPick) {
-                torneoBatchGrid.innerHTML = '';
-                batch.forEach(function (item) {
+                var currentBatch = torneoCurrentRound.slice(torneoBatchIndex, torneoBatchIndex + countToPick);
+
+                var totalBatchesInRound = Math.ceil(torneoCurrentRound.length / torneoMaxBatchSize);
+                var currentBatchNum = Math.floor(torneoBatchIndex / torneoMaxBatchSize) + 1;
+                torneoScreenProgress.textContent = 'Ronda ' + torneoRoundNumber + ' — Grupo ' + currentBatchNum + ' de ' + totalBatchesInRound + ' (' + currentBatch.length + ' participantes)';
+
+                currentBatch.forEach(function (cosmetic) {
                     var card = document.createElement('div');
                     card.className = 'torneo-card';
 
                     var img = document.createElement('img');
-                    img.src = item.image;
-                    img.alt = item.name;
+                    img.src = cosmetic.image;
+                    img.alt = cosmetic.name;
 
                     var span = document.createElement('span');
-                    span.textContent = item.name;
+                    span.textContent = cosmetic.name;
 
                     card.appendChild(img);
                     card.appendChild(span);
 
                     card.addEventListener('click', function () {
-                        onPick(item);
+                        torneoNextRound.push(cosmetic);
+                        torneoBatchIndex += currentBatch.length;
+                        renderTorneoBatch();
                     });
 
                     torneoBatchGrid.appendChild(card);
                 });
             }
 
-            function selectTorneoWinner(item, batch) {
-                torneoRoundWinners.push(item);
-
-                var eliminated = batch.filter(function (b) { return b.id !== item.id; });
-                trackEliminated(torneoRoundNumber, eliminated);
-
-                torneoBatchIndex++;
-                renderTorneoBatch();
-            }
-
-            function finishRound() {
-                // Semifinales reales: ronda de 4 items jugada en 2 enfrentamientos 1 vs 1
-                var wasCleanSemifinal = torneoRoundItems.length === 4 &&
-                    torneoRoundBatches.length === 2 &&
-                    torneoRoundBatches.every(function (b) { return b.length === 2; });
-
-                if (wasCleanSemifinal) {
-                    var semiLosers = torneoEliminatedByRound[torneoRoundNumber] || [];
-                    if (semiLosers.length === 2) {
-                        torneoThirdPlaceContenders = semiLosers;
-                        torneoEliminatedByRound[torneoRoundNumber] = [];
-                    }
-                }
-
-                if (torneoRoundWinners.length === 1) {
-                    torneoChampion = torneoRoundWinners[0];
-
-                    var finalElims = torneoEliminatedByRound[torneoRoundNumber] || [];
-                    if (torneoRoundItems.length === 2 && finalElims.length === 1) {
-                        torneoRunnerUp = finalElims[0];
-                        torneoEliminatedByRound[torneoRoundNumber] = [];
-                    }
-
-                    resolveThirdPlaceThenFinish();
-                    return;
-                }
-
-                torneoRoundItems = shuffleArray(torneoRoundWinners.slice());
-                torneoRoundNumber++;
-                startRound();
-            }
-
-            function resolveThirdPlaceThenFinish() {
-                if (torneoThirdPlaceContenders && torneoThirdPlaceContenders.length === 2) {
-                    var contenders = torneoThirdPlaceContenders;
-                    torneoThirdPlaceContenders = null;
-
-                    torneoScreenProgress.textContent = 'Partido por el 3er puesto (' + contenders.length + ' en juego)';
-                    renderBatchCards(contenders, function (item) {
-                        var loser = contenders.filter(function (c) { return c.id !== item.id; })[0];
-                        torneoThirdPlace = item;
-                        torneoFourthPlace = loser || null;
-                        finishTorneo();
-                    });
-                    return;
-                }
-
-                if (torneoThirdPlaceContenders && torneoThirdPlaceContenders.length === 1) {
-                    torneoThirdPlace = torneoThirdPlaceContenders[0];
-                    torneoThirdPlaceContenders = null;
-                }
-
-                finishTorneo();
-            }
-
-            function finishTorneo() {
-                var ranking = [];
-                if (torneoChampion) ranking.push(torneoChampion);
-                if (torneoRunnerUp) ranking.push(torneoRunnerUp);
-                if (torneoThirdPlace) ranking.push(torneoThirdPlace);
-                if (torneoFourthPlace) ranking.push(torneoFourthPlace);
-
-                for (var r = torneoRoundNumber; r >= 1 && ranking.length < 10; r--) {
-                    var elims = torneoEliminatedByRound[r] || [];
-                    ranking = ranking.concat(elims);
-                }
-                ranking = ranking.slice(0, 10);
-
+            function showTorneoPodium() {
                 torneoScreen.classList.remove('active');
-                showPodium(ranking);
-            }
+                podiumScreen.classList.add('active');
 
-            function showPodium(ranking) {
+                podiumTitle.textContent = '¡Resultados del ' + torneoScreenTitle.textContent + '!';
                 podiumTop3.innerHTML = '';
                 podiumRest.innerHTML = '';
 
-                var placeConfig = [
-                    { cls: 'gold', label: '🥇 1º' },
-                    { cls: 'silver', label: '🥈 2º' },
-                    { cls: 'bronze', label: '🥉 3º' }
-                ];
+                var winners = torneoNextRound.concat(torneoCurrentRound); // Asegurar lista de ganadores
+                var winner = winners[0];
 
-                // Orden visual del podio: 2º, 1º, 3º (como un podio real)
-                var visualOrder = [1, 0, 2];
-                visualOrder.forEach(function (idx) {
-                    if (!ranking[idx]) return;
-                    var item = ranking[idx];
-                    var cfg = placeConfig[idx];
-
-                    var place = document.createElement('div');
-                    place.className = 'podium-place ' + cfg.cls;
-
-                    var badge = document.createElement('div');
-                    badge.className = 'podium-badge';
-                    badge.textContent = cfg.label;
-
-                    var img = document.createElement('img');
-                    img.src = item.image;
-                    img.alt = item.name;
-                    img.crossOrigin = 'anonymous';
-
-                    var name = document.createElement('span');
-                    name.className = 'podium-name';
-                    name.textContent = item.name;
-
-                    place.appendChild(badge);
-                    place.appendChild(img);
-                    place.appendChild(name);
-                    podiumTop3.appendChild(place);
-                });
-
-                for (var i = 3; i < ranking.length; i++) {
-                    var it = ranking[i];
-                    var row = document.createElement('div');
-                    row.className = 'podium-rest-item';
-
-                    var rank = document.createElement('span');
-                    rank.className = 'podium-rank';
-                    rank.textContent = (i + 1) + 'º';
-
-                    var img2 = document.createElement('img');
-                    img2.src = it.image;
-                    img2.alt = it.name;
-                    img2.crossOrigin = 'anonymous';
-
-                    var name2 = document.createElement('span');
-                    name2.className = 'podium-name';
-                    name2.textContent = it.name;
-
-                    row.appendChild(rank);
-                    row.appendChild(img2);
-                    row.appendChild(name2);
-                    podiumRest.appendChild(row);
+                if (winner) {
+                    var goldDiv = document.createElement('div');
+                    goldDiv.className = 'podium-place gold';
+                    goldDiv.innerHTML = '<span class="podium-badge">🥇 1º Lugar</span>' +
+                        '<img src="' + winner.image + '" alt="' + winner.name + '">' +
+                        '<span class="podium-name">' + winner.name + '</span>';
+                    podiumTop3.appendChild(goldDiv);
                 }
-
-                mainMenu.style.display = 'none';
-                podiumScreen.classList.add('active');
             }
 
             btnVolverTorneo.addEventListener('click', function () {
-                if (confirm('¿Seguro que quieres cancelar el torneo? Se perderá el progreso.')) {
-                    goBackToMenu();
-                }
+                torneoScreen.classList.remove('active');
+                mainMenu.style.display = 'grid';
             });
 
-            btnVolverPodio.addEventListener('click', goBackToMenu);
+            btnVolverPodio.addEventListener('click', function () {
+                podiumScreen.classList.remove('active');
+                mainMenu.style.display = 'grid';
+            });
 
             btnFotoFinal.addEventListener('click', function () {
                 html2canvas(podiumExportContainer, {
@@ -2601,102 +2682,34 @@
                     scale: 2,
                     useCORS: true
                 }).then(function (canvas) {
-                    var imageURL = canvas.toDataURL('image/png');
+                    var imageURL = canvas.toDataURL("image/png");
                     var downloadAnchor = document.createElement('a');
-                    downloadAnchor.setAttribute('href', imageURL);
-                    downloadAnchor.setAttribute('download', 'top10_torneo.png');
+                    downloadAnchor.setAttribute("href", imageURL);
+                    downloadAnchor.setAttribute("download", "torneo_podio.png");
                     document.body.appendChild(downloadAnchor);
                     downloadAnchor.click();
                     downloadAnchor.remove();
-                }).catch(function (err) {
-                    console.error('Error al generar la imagen:', err);
-                    alert('Hubo un error al generar la imagen final.');
                 });
             });
 
-            document.getElementById('btnCrearTierList').addEventListener('click', function () {
-                openModal(tierListOverlay);
-            });
-
-            document.getElementById('btnCrearTop').addEventListener('click', function () {
-                openModal(topOverlay);
-            });
-
-            document.getElementById('btnTorneoSkins').addEventListener('click', function () {
-                currentTorneoType = 'skins';
-                torneoModalTitle.textContent = 'Torneo de Skins';
-                torneoMaxRoundSize.value = '10';
-                openModal(torneoOverlay);
-            });
-
-            document.getElementById('btnTorneoAcompanantes').addEventListener('click', function () {
-                currentTorneoType = 'acompanantes';
-                torneoModalTitle.textContent = 'Torneo de Acompañantes';
-                torneoMaxRoundSize.value = '10';
-                openModal(torneoOverlay);
-            });
-
-            document.getElementById('btnCrearTorneoConfirm').addEventListener('click', function () {
-                var maxRound = parseInt(torneoMaxRoundSize.value);
-                if (isNaN(maxRound) || maxRound < 2) {
-                    alert('Por favor, introduce un tamaño de ronda máxima válido (mínimo 2).');
-                    return;
-                }
-                closeModal(torneoOverlay);
-
-                if (currentTorneoType === 'acompanantes' || currentTorneoType === 'skins') {
-                    startTorneo(currentTorneoType, maxRound);
-                } else {
-                    showResultScreen();
-                }
-            });
-
+            // Cierre general de modales
             document.querySelectorAll('.modal-close').forEach(function (btn) {
                 btn.addEventListener('click', function () {
-                    closeModal(document.getElementById(btn.getAttribute('data-close')));
+                    var overlayId = btn.getAttribute('data-close');
+                    if (overlayId) closeModal(document.getElementById(overlayId));
                 });
             });
 
-            [tierListOverlay, topOverlay, torneoOverlay].forEach(function (overlay) {
+            document.querySelectorAll('.overlay').forEach(function (overlay) {
                 overlay.addEventListener('click', function (e) {
-                    if (e.target === overlay) {
-                        closeModal(overlay);
-                    }
+                    if (e.target === overlay) closeModal(overlay);
                 });
             });
 
-            document.getElementById('btnAddSection').addEventListener('click', addSectionRow);
-
-            document.getElementById('btnCrearTierListConfirm').addEventListener('click', function () {
-                var name = document.getElementById('tierListName').value.trim();
-                var rows = sectionsContainer.querySelectorAll('.section-row');
-
-                if (!name) {
-                    alert('Ponle un nombre a tu Tier List antes de crearla.');
-                    return;
-                }
-                if (rows.length === 0) {
-                    alert('Añade al menos una sección antes de crear la Tier List.');
-                    return;
-                }
-
-                var sections = [];
-                rows.forEach(function (row) {
-                    var color = row.querySelector('input[type="color"]').value;
-                    var sectionName = row.querySelector('input[type="text"]').value.trim();
-                    sections.push({ color: color, name: sectionName });
-                });
-
-                closeModal(tierListOverlay);
-                openTierListScreen(name, sections);
+            document.getElementById('btnVolver').addEventListener('click', function () {
+                resultScreen.classList.remove('active');
+                mainMenu.style.display = 'grid';
             });
-
-            document.getElementById('btnCrearTopConfirm').addEventListener('click', function () {
-                closeModal(topOverlay);
-                showResultScreen();
-            });
-
-            document.getElementById('btnVolver').addEventListener('click', goBackToMenu);
         });
     </script>
 </body>
